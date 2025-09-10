@@ -37,7 +37,6 @@ class _LetterScreenState extends State<LetterScreen> {
   Future<void> _playAudioIfAny() async {
     final path = widget.letter.audioPath;
     if (path == null) return;
-// Nếu bạn có file trong assets/audio/letters/, hãy bật dòng dưới và thêm AssetSource
     await _player.stop();
     await _player.play(AssetSource(path));
   }
