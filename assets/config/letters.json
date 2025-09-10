@@ -5,7 +5,7 @@
   {"key": "B", "char": "B", "word": "bé"},
   {"key": "C", "char": "C", "word": "cá"},
   {"key": "D", "char": "D", "word": "dê"},
-  {"key": "D_bar", "char": "Đ", "word": "đỏ"},
+  {"key": "D_cross", "char": "Đ", "word": "đỏ"},
   {"key": "E", "char": "E", "word": "em"},
   {"key": "E_circ", "char": "Ê", "word": "ếch"},
   {"key": "G", "char": "G", "word": "gà"},
