@@ -70,6 +70,11 @@ flutter:
     - assets/audio/ting.mp3
     - assets/audio/correct.mp3
     - assets/audio/wrong.mp3
+    - assets/images/mascot.png
+    - assets/images/icon_book.png
+    - assets/images/icon_flashcard.png
+    - assets/images/icon_game.png
+    - assets/audio/bgm.mp3
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
