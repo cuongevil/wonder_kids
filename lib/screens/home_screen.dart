@@ -35,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onPageChanged(int index) {
     setState(() => _currentPage = index);
     // 👇 phát âm thanh khi sang trang mới
-    AudioService.play("audio/welcome.mp3");
+    AudioService.play("audio/ting.mp3");
   }
 
   @override

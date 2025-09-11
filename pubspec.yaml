@@ -67,6 +67,9 @@ flutter:
     - assets/audio/
     - assets/images/light/
     - assets/images/dark/
+    - assets/audio/ting.mp3
+    - assets/audio/correct.mp3
+    - assets/audio/wrong.mp3
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -21,21 +21,18 @@ class _LetterCardState extends State<LetterCard>
   @override
   void initState() {
     super.initState();
-    _controller =
-        AnimationController(vsync: this, duration: const Duration(milliseconds: 200));
-    _scaleAnimation =
-        Tween<double>(begin: 1.0, end: 1.2).animate(_controller);
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 200));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(_controller);
   }
 
   void _onTap() {
     _controller.forward().then((_) => _controller.reverse());
 
-    // Phát âm thanh
     if (widget.letter.audioPath != null) {
       AudioService.play(LetterAssets.getAudio(widget.letter.audioPath!));
     }
 
-    // Chuyển sang LetterScreen
     Navigator.push(
       context,
       MaterialPageRoute(
