@@ -1,122 +1,128 @@
 import 'package:flutter/material.dart';
 import '../models/vn_letter.dart';
-import '../services/letter_loader.dart';
-import 'letter_screen.dart';
+import '../widgets/letter_card.dart';
+import 'dart:convert';
+import 'package:flutter/services.dart';
+import '../services/audio_service.dart'; // 👈 dùng để phát âm thanh
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  final List<Color> pastelColors = const [
-    Color(0xFFFFF9C4), // vàng nhạt
-    Color(0xFFFFE0B2), // cam nhạt
-    Color(0xFFB2DFDB), // xanh ngọc nhạt
-    Color(0xFFC8E6C9), // xanh lá nhạt
-    Color(0xFFD1C4E9), // tím nhạt
-    Color(0xFFFFCDD2), // hồng nhạt
-  ];
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<VnLetter> letters = [];
+  final PageController _pageController = PageController(viewportFraction: 0.9);
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLetters();
+  }
+
+  Future<void> _loadLetters() async {
+    final String response =
+    await rootBundle.loadString('assets/config/letters.json');
+    final List<dynamic> data = json.decode(response);
+    setState(() {
+      letters = data.map((e) => VnLetter.fromJson(e)).toList();
+    });
+  }
+
+  void _onPageChanged(int index) {
+    setState(() => _currentPage = index);
+    // 👇 phát âm thanh khi sang trang mới
+    AudioService.play("audio/welcome.mp3");
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFE1F5FE), Color(0xFFFFFDE7)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
+    // Chia danh sách chữ cái thành từng nhóm 6
+    final chunks = <List<VnLetter>>[];
+    for (var i = 0; i < letters.length; i += 6) {
+      chunks.add(letters.sublist(i, i + 6 > letters.length ? letters.length : i + 6));
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Bé học chữ cái tiếng Việt"),
+        centerTitle: true,
+        backgroundColor: Colors.pinkAccent.shade100,
       ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: const Text(
-            'Bé học chữ cái tiếng Việt',
-            style: TextStyle(fontWeight: FontWeight.bold),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFB3E5FC), Color(0xFFF8BBD0)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
-          centerTitle: true,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
         ),
-        body: FutureBuilder<List<VnLetter>>(
-          future: LetterLoader.load(), // 🔥 đọc JSON
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return Center(
-                child: Text("Lỗi tải dữ liệu: ${snapshot.error}"),
-              );
-            }
-            final letters = snapshot.data ?? [];
-            if (letters.isEmpty) {
-              return const Center(child: Text("Chưa có dữ liệu chữ cái."));
-            }
-
-            return Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 0.9,
-                ),
-                itemCount: letters.length,
-                itemBuilder: (context, index) {
-                  final letter = letters[index];
-                  final bgColor = pastelColors[index % pastelColors.length];
-
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => LetterScreen(letter: letter),
+        child: Column(
+          children: [
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: chunks.length,
+                onPageChanged: _onPageChanged, // 👈 gọi khi đổi trang
+                itemBuilder: (context, pageIndex) {
+                  return AnimatedBuilder(
+                    animation: _pageController,
+                    builder: (context, child) {
+                      double value = 1.0;
+                      if (_pageController.position.haveDimensions) {
+                        value = _pageController.page! - pageIndex;
+                        value = (1 - (value.abs() * 0.3)).clamp(0.8, 1.0);
+                      }
+                      return Transform.scale(
+                        scale: value,
+                        child: Opacity(
+                          opacity: value,
+                          child: child,
                         ),
                       );
                     },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      decoration: BoxDecoration(
-                        color: bgColor,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 6,
-                            offset: Offset(2, 2),
-                          )
-                        ],
+                    child: GridView.builder(
+                      padding: const EdgeInsets.all(24),
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          if (letter.imagePath != null)
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Image.asset(
-                                  letter.imagePath!,
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                            ),
-                          Text(
-                            letter.char,
-                            style: const TextStyle(
-                              fontSize: 42,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ],
-                      ),
+                      itemCount: chunks[pageIndex].length,
+                      itemBuilder: (context, index) {
+                        return LetterCard(letter: chunks[pageIndex][index]);
+                      },
                     ),
                   );
                 },
               ),
-            );
-          },
+            ),
+            // Thanh chấm chỉ số trang
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(chunks.length, (index) {
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: _currentPage == index ? 16 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: _currentPage == index
+                          ? Colors.pinkAccent
+                          : Colors.grey[400],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ],
         ),
       ),
     );
