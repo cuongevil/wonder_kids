@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:flip_card/flip_card.dart';
 import '../models/vn_letter.dart';
 import '../services/audio_service.dart';
 import '../utils/letter_assets.dart';
@@ -69,71 +70,82 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                 }
                 return Center(
                   child: Transform.scale(
-                    scale: value,
+                    scale: Curves.easeOut.transform(value),
                     child: child,
                   ),
                 );
               },
-              child: GestureDetector(
-                onTap: () => _playAudio(letter.audioPath),
-                child: Card(
-                  elevation: 6,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  color: Colors.white,
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          letter.char,
-                          style: const TextStyle(
-                            fontSize: 96,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        if (letter.imagePath != null)
-                          Image.asset(
-                            LetterAssets.getImage(letter.imagePath!,
-                                isDark: Theme.of(context).brightness ==
-                                    Brightness.dark),
-                            height: 180,
-                          ),
-                        const SizedBox(height: 20),
-                        if (letter.sampleWord != null)
-                          Text(
-                            letter.sampleWord!,
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        const SizedBox(height: 30),
-                        ElevatedButton.icon(
-                          onPressed: () => _playAudio(letter.audioPath),
-                          icon: const Icon(Icons.volume_up),
-                          label: const Text("Nghe lại"),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.pinkAccent.shade100,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 24,
-                            ),
-                            textStyle: const TextStyle(fontSize: 20),
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
+              child: FlipCard(
+                direction: FlipDirection.HORIZONTAL,
+                front: _buildFrontCard(letter),
+                back: _buildBackCard(letter),
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  // Mặt trước: chữ cái to
+  Widget _buildFrontCard(VnLetter letter) {
+    return Card(
+      elevation: 10,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+      child: Center(
+        child: Text(
+          letter.char,
+          style: const TextStyle(
+            fontSize: 140,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Mặt sau: hình minh họa + từ mẫu + nút nghe
+  Widget _buildBackCard(VnLetter letter) {
+    return Card(
+      elevation: 10,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (letter.imagePath != null)
+              Image.asset(
+                LetterAssets.getImage(letter.imagePath!,
+                    isDark: Theme.of(context).brightness == Brightness.dark),
+                height: 160,
+              ),
+            const SizedBox(height: 16),
+            if (letter.sampleWord != null)
+              Text(
+                letter.sampleWord!,
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.pinkAccent,
+                ),
+              ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () => _playAudio(letter.audioPath),
+              icon: const Icon(Icons.volume_up, size: 28),
+              label: const Text("Nghe lại", style: TextStyle(fontSize: 22)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.pinkAccent,
+                foregroundColor: Colors.white,
+                padding:
+                const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                shape: const StadiumBorder(),
+                elevation: 6,
+              ),
+            ),
+          ],
         ),
       ),
     );

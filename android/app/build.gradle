@@ -37,6 +37,9 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        debug {
+            signingConfig signingConfigs.debug
+        }
     }
 
     compileOptions {
@@ -46,6 +49,30 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+    }
+
+    // ⚡ Fix output để Flutter tìm thấy APK
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            // chỉ đổi tên file (không set absolute path)
+            def fileName = "app-${variant.buildType.name}.apk"
+            output.outputFileName = fileName
+
+            // copy sau khi build xong
+            tasks.named("assemble${variant.buildType.name.capitalize()}").configure {
+                doLast {
+                    def buildDirOld = output.outputFile.parentFile
+                    def buildDirNew = new File(rootProject.projectDir, "../build/app/outputs/flutter-apk")
+                    if (!buildDirNew.exists()) {
+                        buildDirNew.mkdirs()
+                    }
+                    copy {
+                        from("${buildDirOld}/${fileName}")
+                        into(buildDirNew)
+                    }
+                }
+            }
+        }
     }
 }
 
