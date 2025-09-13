@@ -1,10 +1,12 @@
-import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'package:flutter/services.dart';
+
 import 'package:flip_card/flip_card.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 import '../models/vn_letter.dart';
 import '../services/audio_service.dart';
-import '../utils/letter_assets.dart';
+import '../widgets/celebration_overlay.dart';
 
 class FlashcardScreen extends StatefulWidget {
   const FlashcardScreen({super.key});
@@ -24,8 +26,9 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
   }
 
   Future<void> _loadLetters() async {
-    final String response =
-    await rootBundle.loadString('assets/config/letters.json');
+    final String response = await rootBundle.loadString(
+      'assets/config/letters.json',
+    );
     final List<dynamic> data = json.decode(response);
     setState(() {
       letters = data.map((e) => VnLetter.fromJson(e)).toList();
@@ -34,7 +37,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
 
   void _playAudio(String? path) {
     if (path != null) {
-      AudioService.play(LetterAssets.getAudio(path));
+      AudioService.play(path);
     }
   }
 
@@ -56,38 +59,42 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
         child: letters.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : PageView.builder(
-          controller: _pageController,
-          itemCount: letters.length,
-          itemBuilder: (context, index) {
-            final letter = letters[index];
-            return AnimatedBuilder(
-              animation: _pageController,
-              builder: (context, child) {
-                double value = 1.0;
-                if (_pageController.position.haveDimensions) {
-                  value = _pageController.page! - index;
-                  value = (1 - (value.abs() * 0.3)).clamp(0.8, 1.0);
-                }
-                return Center(
-                  child: Transform.scale(
-                    scale: Curves.easeOut.transform(value),
-                    child: child,
-                  ),
-                );
-              },
-              child: FlipCard(
-                direction: FlipDirection.HORIZONTAL,
-                front: _buildFrontCard(letter),
-                back: _buildBackCard(letter),
+                controller: _pageController,
+                itemCount: letters.length,
+                itemBuilder: (context, index) {
+                  final letter = letters[index];
+                  return AnimatedBuilder(
+                    animation: _pageController,
+                    builder: (context, child) {
+                      double value = 1.0;
+                      if (_pageController.position.haveDimensions) {
+                        value = _pageController.page! - index;
+                        value = (1 - (value.abs() * 0.3)).clamp(0.8, 1.0);
+                      }
+                      return Center(
+                        child: Transform.scale(
+                          scale: Curves.easeOut.transform(value),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: FlipCard(
+                      direction: FlipDirection.HORIZONTAL,
+                      front: _buildFrontCard(letter),
+                      back: _buildBackCard(letter),
+                      onFlipDone: (isFront) {
+                        if (!isFront) {
+                          CelebrationOverlay.show(context); // 🎉 hiệu ứng
+                        }
+                      },
+                    ),
+                  );
+                },
               ),
-            );
-          },
-        ),
       ),
     );
   }
 
-  // Mặt trước: chữ cái to
   Widget _buildFrontCard(VnLetter letter) {
     return Card(
       elevation: 10,
@@ -105,7 +112,6 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
     );
   }
 
-  // Mặt sau: hình minh họa + từ mẫu + nút nghe
   Widget _buildBackCard(VnLetter letter) {
     return Card(
       elevation: 10,
@@ -116,11 +122,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (letter.imagePath != null)
-              Image.asset(
-                LetterAssets.getImage(letter.imagePath!,
-                    isDark: Theme.of(context).brightness == Brightness.dark),
-                height: 160,
-              ),
+              Image.asset(letter.imagePath!, height: 160),
             const SizedBox(height: 16),
             if (letter.sampleWord != null)
               Text(
@@ -139,8 +141,10 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.pinkAccent,
                 foregroundColor: Colors.white,
-                padding:
-                const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
                 shape: const StadiumBorder(),
                 elevation: 6,
               ),

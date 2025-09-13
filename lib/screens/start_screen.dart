@@ -1,11 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'home_screen.dart';
+import 'package:flutter/material.dart';
+
 import 'flashcard_screen.dart';
 import 'game_screen.dart';
+import 'home_screen.dart';
 
 class StartScreen extends StatefulWidget {
   const StartScreen({super.key});
+
   @override
   State<StartScreen> createState() => _StartScreenState();
 }
@@ -17,36 +19,6 @@ class _StartScreenState extends State<StartScreen>
   @override
   void initState() {
     super.initState();
-    _bgmPlayer = AudioPlayer();
-    _playBgmSafe();
-  }
-
-  Future<void> _playBgmSafe() async {
-    try {
-      await _bgmPlayer.setReleaseMode(ReleaseMode.loop);
-      await _bgmPlayer.setVolume(0.35);
-
-      // Ưu tiên mp3, nếu không có sẽ fallback sang wav
-      final candidates = ["audio/bgm.mp3", "audio/bgm.wav"];
-      for (final src in candidates) {
-        try {
-          await _bgmPlayer.play(AssetSource(src));
-          // nếu play ok thì thoát
-          return;
-        } catch (_) {
-          // thử cái tiếp theo
-        }
-      }
-    } catch (e) {
-      debugPrint("BGM error: $e");
-    }
-  }
-
-  @override
-  void dispose() {
-    _bgmPlayer.stop();
-    _bgmPlayer.dispose();
-    super.dispose();
   }
 
   @override
@@ -78,7 +50,7 @@ class _StartScreenState extends State<StartScreen>
                 "assets/images/mascot.png",
                 height: 150,
                 errorBuilder: (_, __, ___) =>
-                const Icon(Icons.pets, size: 120, color: Colors.white70),
+                    const Icon(Icons.pets, size: 120, color: Colors.white70),
               ),
               const SizedBox(height: 24),
 
@@ -199,7 +171,7 @@ class _AnimatedGradientButtonState extends State<AnimatedGradientButton>
                     widget.iconPath,
                     height: 28,
                     errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.image, color: Colors.white),
+                        const Icon(Icons.image, color: Colors.white),
                   ),
                   const SizedBox(width: 12),
                   Text(

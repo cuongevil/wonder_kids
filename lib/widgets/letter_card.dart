@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../models/vn_letter.dart';
-import '../services/audio_service.dart';
-import '../utils/letter_assets.dart';
 import '../screens/letter_screen.dart';
+import '../services/audio_service.dart';
 
 class LetterCard extends StatefulWidget {
   final VnLetter letter;
@@ -22,7 +22,9 @@ class _LetterCardState extends State<LetterCard>
   void initState() {
     super.initState();
     _controller = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 200));
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(_controller);
   }
 
@@ -30,14 +32,12 @@ class _LetterCardState extends State<LetterCard>
     _controller.forward().then((_) => _controller.reverse());
 
     if (widget.letter.audioPath != null) {
-      AudioService.play(LetterAssets.getAudio(widget.letter.audioPath!));
+      AudioService.play(widget.letter.audioPath!);
     }
 
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => LetterScreen(letter: widget.letter),
-      ),
+      MaterialPageRoute(builder: (_) => LetterScreen(letter: widget.letter)),
     );
   }
 
@@ -49,8 +49,9 @@ class _LetterCardState extends State<LetterCard>
         onTap: _onTap,
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.primaries[
-            widget.letter.char.codeUnitAt(0) % Colors.primaries.length]
+            color: Colors
+                .primaries[widget.letter.char.codeUnitAt(0) %
+                    Colors.primaries.length]
                 .shade100,
             shape: BoxShape.circle,
             boxShadow: const [
@@ -58,7 +59,7 @@ class _LetterCardState extends State<LetterCard>
                 color: Colors.black12,
                 blurRadius: 6,
                 offset: Offset(2, 4),
-              )
+              ),
             ],
           ),
           child: Padding(
@@ -69,9 +70,7 @@ class _LetterCardState extends State<LetterCard>
                 if (widget.letter.imagePath != null)
                   Expanded(
                     child: Image.asset(
-                      LetterAssets.getImage(widget.letter.imagePath!,
-                          isDark: Theme.of(context).brightness ==
-                              Brightness.dark),
+                      widget.letter.imagePath!,
                       fit: BoxFit.contain,
                     ),
                   ),

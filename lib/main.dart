@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'screens/start_screen.dart';
 
 void main() {
@@ -13,11 +14,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Bé học chữ cái',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.light().copyWith(
-        primaryColor: Colors.pinkAccent,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4CAF50)),
+        useMaterial3: true,
       ),
-      darkTheme: ThemeData.dark(),
-      themeMode: ThemeMode.system,
       home: const StartScreen(),
     );
   }

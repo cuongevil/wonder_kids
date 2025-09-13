@@ -1,5 +1,7 @@
 import 'dart:convert';
+
 import 'package:flutter/services.dart' show rootBundle;
+
 import '../models/vn_letter.dart';
 
 class LetterLoader {
@@ -15,6 +17,7 @@ class LetterLoader {
       final char = e['char'] as String;
       final word = (e['word'] as String?)?.trim();
       return VnLetter(
+        key: char,
         char: char,
         sampleWord: (word == null || word.isEmpty) ? null : word,
         imagePath: 'assets/images/letters/$key.png',
