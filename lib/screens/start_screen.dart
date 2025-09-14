@@ -1,25 +1,8 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import '../config/app_routes.dart';
 
-import 'flashcard_screen.dart';
-import 'game_screen.dart';
-import 'home_screen.dart';
-
-class StartScreen extends StatefulWidget {
+class StartScreen extends StatelessWidget {
   const StartScreen({super.key});
-
-  @override
-  State<StartScreen> createState() => _StartScreenState();
-}
-
-class _StartScreenState extends State<StartScreen>
-    with SingleTickerProviderStateMixin {
-  late final AudioPlayer _bgmPlayer;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,33 +33,33 @@ class _StartScreenState extends State<StartScreen>
                 "assets/images/mascot.png",
                 height: 150,
                 errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.pets, size: 120, color: Colors.white70),
+                const Icon(Icons.pets, size: 120, color: Colors.white70),
               ),
               const SizedBox(height: 24),
 
-              // Nút 1: Học theo thứ tự (hồng -> cam, động)
+              // Nút 1: Học theo thứ tự
               AnimatedGradientButton(
                 title: "Học theo thứ tự",
                 iconPath: "assets/images/icon_book.png",
-                screen: const HomeScreen(),
+                routeName: AppRoutes.home,
                 gradient1: const [Color(0xFFF8BBD0), Color(0xFFFFCC80)],
                 gradient2: const [Color(0xFFFFE0B2), Color(0xFFF48FB1)],
               ),
 
-              // Nút 2: Flashcard (xanh -> tím, động)
+              // Nút 2: Flashcard
               AnimatedGradientButton(
                 title: "Flashcard",
                 iconPath: "assets/images/icon_flashcard.png",
-                screen: const FlashcardScreen(),
+                routeName: AppRoutes.flashcard,
                 gradient1: const [Color(0xFFB3E5FC), Color(0xFFD1C4E9)],
                 gradient2: const [Color(0xFFCE93D8), Color(0xFF81D4FA)],
               ),
 
-              // Nút 3: Trò chơi (vàng -> hồng, động)
+              // Nút 3: Trò chơi
               AnimatedGradientButton(
                 title: "Trò chơi tìm chữ",
                 iconPath: "assets/images/icon_game.png",
-                screen: const GameScreen(),
+                routeName: AppRoutes.game,
                 gradient1: const [Color(0xFFFFF59D), Color(0xFFF48FB1)],
                 gradient2: const [Color(0xFFFFF176), Color(0xFFFF8A80)],
               ),
@@ -94,7 +77,7 @@ class _StartScreenState extends State<StartScreen>
 class AnimatedGradientButton extends StatefulWidget {
   final String title;
   final String iconPath;
-  final Widget screen;
+  final String routeName;
   final List<Color> gradient1;
   final List<Color> gradient2;
 
@@ -102,13 +85,14 @@ class AnimatedGradientButton extends StatefulWidget {
     super.key,
     required this.title,
     required this.iconPath,
-    required this.screen,
+    required this.routeName,
     required this.gradient1,
     required this.gradient2,
   });
 
   @override
-  State<AnimatedGradientButton> createState() => _AnimatedGradientButtonState();
+  State<AnimatedGradientButton> createState() =>
+      _AnimatedGradientButtonState();
 }
 
 class _AnimatedGradientButtonState extends State<AnimatedGradientButton>
@@ -142,10 +126,7 @@ class _AnimatedGradientButtonState extends State<AnimatedGradientButton>
           ];
           return InkWell(
             borderRadius: BorderRadius.circular(50),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => widget.screen),
-            ),
+            onTap: () => Navigator.pushNamed(context, widget.routeName),
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -171,7 +152,7 @@ class _AnimatedGradientButtonState extends State<AnimatedGradientButton>
                     widget.iconPath,
                     height: 28,
                     errorBuilder: (_, __, ___) =>
-                        const Icon(Icons.image, color: Colors.white),
+                    const Icon(Icons.image, color: Colors.white),
                   ),
                   const SizedBox(width: 12),
                   Text(

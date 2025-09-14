@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import '../models/vn_letter.dart';
-import '../widgets/letter_card.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import '../services/audio_service.dart'; // 👈 dùng để phát âm thanh
+
+import '../models/vn_letter.dart';
+import '../widgets/letter_card.dart';
+import '../services/audio_service.dart';
+import '../config/app_routes.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -34,16 +36,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onPageChanged(int index) {
     setState(() => _currentPage = index);
-    // 👇 phát âm thanh khi sang trang mới
-    AudioService.play("audio/ting.mp3");
+    AudioService.play("audio/ting.mp3"); // hiệu ứng khi sang trang
   }
 
   @override
   Widget build(BuildContext context) {
-    // Chia danh sách chữ cái thành từng nhóm 6
+    // chia danh sách chữ cái thành từng nhóm 6
     final chunks = <List<VnLetter>>[];
     for (var i = 0; i < letters.length; i += 6) {
-      chunks.add(letters.sublist(i, i + 6 > letters.length ? letters.length : i + 6));
+      chunks.add(
+        letters.sublist(i, i + 6 > letters.length ? letters.length : i + 6),
+      );
     }
 
     return Scaffold(
@@ -66,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: PageView.builder(
                 controller: _pageController,
                 itemCount: chunks.length,
-                onPageChanged: _onPageChanged, // 👈 gọi khi đổi trang
+                onPageChanged: _onPageChanged,
                 itemBuilder: (context, pageIndex) {
                   return AnimatedBuilder(
                     animation: _pageController,
@@ -78,23 +81,31 @@ class _HomeScreenState extends State<HomeScreen> {
                       }
                       return Transform.scale(
                         scale: value,
-                        child: Opacity(
-                          opacity: value,
-                          child: child,
-                        ),
+                        child: Opacity(opacity: value, child: child),
                       );
                     },
                     child: GridView.builder(
                       padding: const EdgeInsets.all(24),
                       physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
                       ),
                       itemCount: chunks[pageIndex].length,
                       itemBuilder: (context, index) {
-                        return LetterCard(letter: chunks[pageIndex][index]);
+                        final letter = chunks[pageIndex][index];
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.letter,
+                              arguments: letter, // 👉 truyền sang LetterScreen
+                            );
+                          },
+                          child: LetterCard(letter: letter),
+                        );
                       },
                     ),
                   );
