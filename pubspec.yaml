@@ -35,17 +35,9 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/config/letters.json
-    - assets/images/letters/
-    - assets/audio/letters/
-    - assets/audio/ting.mp3
-    - assets/audio/correct.mp3
-    - assets/audio/wrong.mp3
-    - assets/images/mascot.png
-    - assets/images/icon_book.png
-    - assets/images/icon_flashcard.png
-    - assets/images/icon_game.png
-    - assets/audio/bgm.mp3
+    - assets/config/
+    - assets/images/
+    - assets/audio/
 
   # fonts:
   #   - family: Schyler
