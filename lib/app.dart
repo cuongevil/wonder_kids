@@ -14,7 +14,7 @@ class WonderKidsApp extends StatelessWidget {
       darkTheme: AppTheme.dark(),
       themeMode: ThemeMode.system,
       initialRoute: AppRoutes.start,
-      routes: AppRoutes.map(),
+      onGenerateRoute: AppRoutes.generateRoute,
     );
   }
 }

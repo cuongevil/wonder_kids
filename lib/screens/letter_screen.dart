@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
@@ -5,36 +6,64 @@ import '../models/vn_letter.dart';
 import '../services/tts_service.dart';
 
 class LetterScreen extends StatefulWidget {
-  final VnLetter letter;
-  const LetterScreen({super.key, required this.letter});
+  final List<VnLetter> letters;
+  final int currentIndex;
+
+  const LetterScreen({
+    super.key,
+    required this.letters,
+    required this.currentIndex,
+  });
 
   @override
   State<LetterScreen> createState() => _LetterScreenState();
 }
 
-class _LetterScreenState extends State<LetterScreen> {
+class _LetterScreenState extends State<LetterScreen>
+    with TickerProviderStateMixin {
   final _tts = TtsService();
   final _player = AudioPlayer();
+
+  late VnLetter currentLetter;
+  late AnimationController _imgBounceController;
+  late AnimationController _particleController;
+
+  final List<_Particle> _particles = [];
+  final Random _random = Random();
+
+  @override
+  void initState() {
+    super.initState();
+    currentLetter = widget.letters[widget.currentIndex];
+
+    _imgBounceController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat(reverse: true);
+
+    _particleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..addListener(() => setState(() {}));
+  }
 
   @override
   void dispose() {
     _tts.dispose();
     _player.dispose();
+    _imgBounceController.dispose();
+    _particleController.dispose();
     super.dispose();
   }
 
   Future<void> _speakLetter() async {
-    await _tts.speak('Chữ ${widget.letter.char}');
-  }
-
-  Future<void> _speakSample() async {
-    final s = widget.letter.sampleWord;
-    if (s == null || s.isEmpty) return;
-    await _tts.speak(s);
+    await _tts.speak('Chữ ${currentLetter.char}');
+    _spawnParticles();
+    _particleController.forward(from: 0);
   }
 
   Future<void> _playAudioIfAny() async {
-    final path = widget.letter.audioPath;
+    final path = currentLetter.audioPath;
     if (path == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Không có âm thanh cho chữ này")),
@@ -43,11 +72,47 @@ class _LetterScreenState extends State<LetterScreen> {
     }
     await _player.stop();
     await _player.play(AssetSource(path));
+    _spawnParticles();
+    _particleController.forward(from: 0);
+  }
+
+  void _spawnParticles() {
+    _particles.clear();
+    const icons = [Icons.star, Icons.favorite, Icons.music_note];
+    for (int i = 0; i < 8; i++) {
+      final angle = _random.nextDouble() * 2 * pi;
+      final distance = 40 + _random.nextDouble() * 40;
+      _particles.add(
+        _Particle(
+          dx: cos(angle) * distance,
+          dy: sin(angle) * distance,
+          size: 14 + _random.nextDouble() * 10,
+          rotation: _random.nextDouble() * 2 * pi,
+          icon: icons[_random.nextInt(icons.length)],
+          color: Colors.primaries[_random.nextInt(Colors.primaries.length)]
+              .shade300,
+        ),
+      );
+    }
+  }
+
+  void _goToLetter(int newIndex) {
+    if (newIndex < 0 || newIndex >= widget.letters.length) return;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LetterScreen(
+          letters: widget.letters,
+          currentIndex: newIndex,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final l = widget.letter;
+    final l = currentLetter;
 
     return Scaffold(
       appBar: AppBar(
@@ -64,109 +129,155 @@ class _LetterScreenState extends State<LetterScreen> {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: Column(
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            // Ảnh minh họa to full width
-            if (l.imagePath != null)
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
-                ),
-                child: Image.asset(
-                  l.imagePath!,
-                  width: double.infinity,
-                  height: MediaQuery.of(context).size.height * 0.4,
-                  fit: BoxFit.contain, // giữ tỉ lệ, không crop mất nội dung
-                  errorBuilder: (_, __, ___) =>
-                  const Icon(Icons.image_not_supported, size: 120),
-                ),
-              ),
+            Column(
+              children: [
+                const SizedBox(height: 20),
 
-            const SizedBox(height: 20),
+                // Ảnh minh họa có bounce
+                if (l.imagePath != null)
+                  ScaleTransition(
+                    scale: Tween<double>(begin: 1.0, end: 1.05).animate(
+                      CurvedAnimation(
+                        parent: _imgBounceController,
+                        curve: Curves.easeInOut,
+                      ),
+                    ),
+                    child: Image.asset(
+                      l.imagePath!,
+                      width: double.infinity,
+                      height: MediaQuery.of(context).size.height * 0.4,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
 
-            // Từ ví dụ trong card bo tròn
-            if (l.sampleWord != null)
-              Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.8),
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26.withOpacity(0.1),
-                      blurRadius: 6,
-                      offset: const Offset(2, 4),
+                const SizedBox(height: 50),
+
+                // 2 nút chính
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildCircleButton(
+                      icon: Icons.volume_up,
+                      colors: [Colors.pinkAccent, Colors.pink],
+                      onTap: _speakLetter,
+                    ),
+                    const SizedBox(width: 40),
+                    _buildCircleButton(
+                      icon: Icons.music_note,
+                      colors: [Colors.blueAccent, Colors.lightBlue],
+                      onTap: _playAudioIfAny,
                     ),
                   ],
                 ),
-                child: Text(
-                  l.sampleWord!,
-                  style: const TextStyle(
-                    fontSize: 44,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple,
-                  ),
-                ),
-              ),
 
-            const SizedBox(height: 40),
+                const Spacer(),
 
-            // 3 nút tròn icon-only pastel
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildCircleButton(
-                  icon: Icons.volume_up,
-                  color: Colors.pinkAccent,
-                  onTap: _speakLetter,
-                ),
-                const SizedBox(width: 30),
-                _buildCircleButton(
-                  icon: Icons.record_voice_over,
-                  color: Colors.blueAccent,
-                  onTap: l.sampleWord == null ? null : _speakSample,
-                ),
-                const SizedBox(width: 30),
-                _buildCircleButton(
-                  icon: Icons.music_note,
-                  color: Colors.green,
-                  onTap: l.audioPath == null ? null : _playAudioIfAny,
+                // Nút điều hướng trước/sau
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    if (widget.currentIndex > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16, bottom: 16),
+                        child: _buildCircleButton(
+                          icon: Icons.arrow_back,
+                          colors: [Colors.orange, Colors.deepOrange],
+                          onTap: () => _goToLetter(widget.currentIndex - 1),
+                        ),
+                      ),
+                    if (widget.currentIndex < widget.letters.length - 1)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 16, bottom: 16),
+                        child: _buildCircleButton(
+                          icon: Icons.arrow_forward,
+                          colors: [Colors.green, Colors.lightGreen],
+                          onTap: () => _goToLetter(widget.currentIndex + 1),
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),
+
+            // Particle effect
+            ..._particles.map((p) {
+              final progress = _particleController.value;
+              final dx = p.dx * progress;
+              final dy = p.dy * progress;
+              final opacity = (1 - progress).clamp(0.0, 1.0);
+              return Positioned.fill(
+                child: Transform.translate(
+                  offset: Offset(dx, dy),
+                  child: Transform.rotate(
+                    angle: p.rotation,
+                    child: Opacity(
+                      opacity: opacity,
+                      child: Icon(
+                        p.icon,
+                        size: p.size,
+                        color: p.color,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
           ],
         ),
       ),
     );
   }
 
-  /// Helper: nút tròn pastel
+  /// Nút gradient pastel
   Widget _buildCircleButton({
     required IconData icon,
-    required Color color,
+    required List<Color> colors,
     VoidCallback? onTap,
   }) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(50),
-      child: Container(
-        width: 70,
-        height: 70,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        width: 80,
+        height: 80,
         decoration: BoxDecoration(
-          color: color,
           shape: BoxShape.circle,
+          gradient: LinearGradient(
+            colors: colors,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.4),
-              blurRadius: 10,
-              offset: const Offset(2, 4),
+              color: colors.first.withOpacity(0.5),
+              blurRadius: 12,
+              offset: const Offset(2, 6),
             )
           ],
         ),
-        child: Icon(icon, color: Colors.white, size: 32),
+        child: Icon(icon, color: Colors.white, size: 36),
       ),
     );
   }
+}
+
+class _Particle {
+  final double dx;
+  final double dy;
+  final double size;
+  final double rotation;
+  final IconData icon;
+  final Color color;
+
+  _Particle({
+    required this.dx,
+    required this.dy,
+    required this.size,
+    required this.rotation,
+    required this.icon,
+    required this.color,
+  });
 }

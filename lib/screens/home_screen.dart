@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 
+import '../config/app_routes.dart';
 import '../models/vn_letter.dart';
 import '../widgets/letter_card.dart';
 import '../services/audio_service.dart';
-import '../config/app_routes.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -36,12 +36,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onPageChanged(int index) {
     setState(() => _currentPage = index);
-    AudioService.play("audio/ting.mp3"); // hiệu ứng khi sang trang
+    AudioService.play("audio/ting.mp3");
   }
 
   @override
   Widget build(BuildContext context) {
-    // chia danh sách chữ cái thành từng nhóm 6
+    // chia thành từng nhóm 6 chữ cái
     final chunks = <List<VnLetter>>[];
     for (var i = 0; i < letters.length; i += 6) {
       chunks.add(
@@ -77,34 +77,47 @@ class _HomeScreenState extends State<HomeScreen> {
                       double value = 1.0;
                       if (_pageController.position.haveDimensions) {
                         value = _pageController.page! - pageIndex;
-                        value = (1 - (value.abs() * 0.3)).clamp(0.8, 1.0);
                       }
-                      return Transform.scale(
-                        scale: value,
-                        child: Opacity(opacity: value, child: child),
+                      final scale = (1 - value.abs() * 0.2).clamp(0.85, 1.0);
+                      final rotation = value * 0.15;
+                      return Transform(
+                        alignment: Alignment.center,
+                        transform: Matrix4.identity()
+                          ..scale(scale)
+                          ..rotateZ(rotation),
+                        child: Opacity(
+                          opacity: (1 - value.abs() * 0.5).clamp(0.5, 1.0),
+                          child: child,
+                        ),
                       );
                     },
                     child: GridView.builder(
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(16),
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate:
                       const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 20,
+                        mainAxisSpacing: 20,
+                        childAspectRatio: 0.8,
                       ),
                       itemCount: chunks[pageIndex].length,
-                      itemBuilder: (context, index) {
-                        final letter = chunks[pageIndex][index];
-                        return GestureDetector(
+                      itemBuilder: (context, indexInChunk) {
+                        final letter = chunks[pageIndex][indexInChunk];
+                        final globalIndex = pageIndex * 6 + indexInChunk;
+
+                        return LetterCard(
+                          letter: letter,
                           onTap: () {
                             Navigator.pushNamed(
                               context,
                               AppRoutes.letter,
-                              arguments: letter, // 👉 truyền sang LetterScreen
+                              arguments: {
+                                "letters": letters,
+                                "currentIndex": globalIndex,
+                              },
                             );
                           },
-                          child: LetterCard(letter: letter),
                         );
                       },
                     ),
