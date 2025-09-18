@@ -33,9 +33,7 @@ class _GameScreenState extends State<GameScreen>
 
   // random audio khen thưởng
   final List<String> praiseAudios = [
-    "audio/correct1.mp3",
-    "audio/correct2.mp3",
-    "audio/correct3.mp3",
+    "audio/correct.mp3"
   ];
 
   @override
@@ -139,7 +137,7 @@ class _GameScreenState extends State<GameScreen>
             padding: const EdgeInsets.all(8.0),
             child: Center(
               child: Text(
-                "🔥 Combo: $combo",
+                "🔥 Liên tiếp: $combo",
                 style: const TextStyle(
                     fontSize: 18, fontWeight: FontWeight.bold),
               ),

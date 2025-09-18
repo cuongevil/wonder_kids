@@ -1,12 +1,16 @@
-import 'package:flutter/material.dart';
 import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+
 import '../config/app_routes.dart';
+import '../utils/responsive.dart';
 
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final r = Responsive(context);
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -34,10 +38,14 @@ class StartScreen extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ).createShader(bounds),
-                    child: const Text(
+                    child: Text(
                       "✨ Bé học chữ cái ✨",
                       style: TextStyle(
-                        fontSize: 38,
+                        fontSize: r.isSmall
+                            ? 28
+                            : r.isMedium
+                            ? 34
+                            : 42,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         shadows: [
@@ -63,19 +71,31 @@ class StartScreen extends StatelessWidget {
                     title: "Học theo thứ tự",
                     iconPath: "assets/images/icon_book.png",
                     routeName: AppRoutes.home,
-                    colors: [Colors.pinkAccent, Colors.orangeAccent, Colors.yellow],
+                    colors: [
+                      Colors.pinkAccent,
+                      Colors.orangeAccent,
+                      Colors.yellow,
+                    ],
                   ),
                   WowButton(
-                    title: "Flashcard",
+                    title: "Thẻ học chữ",
                     iconPath: "assets/images/icon_flashcard.png",
                     routeName: AppRoutes.flashcard,
-                    colors: [Colors.lightBlueAccent, Colors.purpleAccent, Colors.blueAccent],
+                    colors: [
+                      Colors.lightBlueAccent,
+                      Colors.purpleAccent,
+                      Colors.blueAccent,
+                    ],
                   ),
                   WowButton(
                     title: "Trò chơi tìm chữ",
                     iconPath: "assets/images/icon_game.png",
                     routeName: AppRoutes.game,
-                    colors: [Colors.yellowAccent, Colors.pinkAccent, Colors.redAccent],
+                    colors: [
+                      Colors.yellowAccent,
+                      Colors.pinkAccent,
+                      Colors.redAccent,
+                    ],
                   ),
 
                   const Spacer(),
@@ -104,10 +124,8 @@ class _BouncingMascotState extends State<BouncingMascot>
   @override
   void initState() {
     super.initState();
-    _c = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat(reverse: true);
+    _c = AnimationController(vsync: this, duration: const Duration(seconds: 3))
+      ..repeat(reverse: true);
   }
 
   @override
@@ -118,17 +136,19 @@ class _BouncingMascotState extends State<BouncingMascot>
 
   @override
   Widget build(BuildContext context) {
+    final r = Responsive(context);
     return ScaleTransition(
-      scale: Tween(begin: 0.95, end: 1.05).animate(
-        CurvedAnimation(parent: _c, curve: Curves.easeInOut),
-      ),
+      scale: Tween(
+        begin: 0.95,
+        end: 1.05,
+      ).animate(CurvedAnimation(parent: _c, curve: Curves.easeInOut)),
       child: RotationTransition(
         turns: Tween(begin: -0.01, end: 0.01).animate(_c),
         child: Image.asset(
           "assets/images/mascot.png",
-          height: 250,
+          height: r.hp(r.isSmall ? 25 : 30),
           errorBuilder: (_, __, ___) =>
-          const Icon(Icons.pets, size: 120, color: Colors.white70),
+              const Icon(Icons.pets, size: 120, color: Colors.white70),
         ),
       ),
     );
@@ -141,13 +161,11 @@ class FloatingBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = Responsive(context);
     return Stack(
       children: List.generate(
         6,
-            (i) => _FloatingItem(
-          left: 40.0 + i * 50,
-          delay: i * 500,
-        ),
+        (i) => _FloatingItem(left: 40.0 + i * 50, delay: i * 500),
       ),
     );
   }
@@ -170,10 +188,8 @@ class _FloatingItemState extends State<_FloatingItem>
   @override
   void initState() {
     super.initState();
-    _c = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 6),
-    )..repeat();
+    _c = AnimationController(vsync: this, duration: const Duration(seconds: 6))
+      ..repeat();
   }
 
   @override
@@ -184,11 +200,13 @@ class _FloatingItemState extends State<_FloatingItem>
 
   @override
   Widget build(BuildContext context) {
+    final r = Responsive(context);
     final random = math.Random();
     return AnimatedBuilder(
       animation: _c,
       builder: (context, child) {
-        final dy = MediaQuery.of(context).size.height *
+        final dy =
+            MediaQuery.of(context).size.height *
             (1 - (_c.value + widget.delay / 6000) % 1);
         return Positioned(
           left: widget.left + random.nextDouble() * 20,
@@ -234,10 +252,8 @@ class _WowButtonState extends State<WowButton>
   @override
   void initState() {
     super.initState();
-    _c = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat(reverse: true);
+    _c = AnimationController(vsync: this, duration: const Duration(seconds: 3))
+      ..repeat(reverse: true);
   }
 
   @override
@@ -248,6 +264,7 @@ class _WowButtonState extends State<WowButton>
 
   @override
   Widget build(BuildContext context) {
+    final r = Responsive(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
       child: GestureDetector(
@@ -266,8 +283,10 @@ class _WowButtonState extends State<WowButton>
             return Transform.scale(
               scale: scale,
               child: Container(
-                padding:
-                const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 20,
+                  horizontal: 20,
+                ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: widget.colors,
@@ -294,7 +313,7 @@ class _WowButtonState extends State<WowButton>
                       widget.iconPath,
                       height: 40,
                       errorBuilder: (_, __, ___) =>
-                      const Icon(Icons.star, size: 36, color: Colors.white),
+                          const Icon(Icons.star, size: 36, color: Colors.white),
                     ),
                     const SizedBox(width: 16),
                     Text(

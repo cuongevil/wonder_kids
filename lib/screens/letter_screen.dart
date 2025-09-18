@@ -66,7 +66,8 @@ class _LetterScreenState extends State<LetterScreen>
     final path = currentLetter.audioPath;
     if (path == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Không có âm thanh cho chữ này")),
+        const SnackBar(content: Text(
+            "Không có âm thanh cho chữ này")),
       );
       return;
     }

@@ -51,7 +51,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Bé học chữ cái tiếng Việt"),
+        title: const Text(
+            "Bé học chữ cái tiếng Việt"),
         centerTitle: true,
         backgroundColor: Colors.pinkAccent.shade100,
       ),
