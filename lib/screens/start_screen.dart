@@ -29,36 +29,6 @@ class StartScreen extends StatelessWidget {
 
               Column(
                 children: [
-                  const SizedBox(height: 16),
-
-                  // 🌈 Tiêu đề gradient
-                  ShaderMask(
-                    shaderCallback: (bounds) => const LinearGradient(
-                      colors: [Colors.pink, Colors.purple, Colors.orange],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ).createShader(bounds),
-                    child: Text(
-                      "✨ Bé học chữ cái ✨",
-                      style: TextStyle(
-                        fontSize: r.isSmall
-                            ? 28
-                            : r.isMedium
-                            ? 34
-                            : 42,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black26,
-                            blurRadius: 4,
-                            offset: Offset(2, 2),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
                   const SizedBox(height: 12),
 
                   // 🐙 Mascot có animation
@@ -78,7 +48,7 @@ class StartScreen extends StatelessWidget {
                     ],
                   ),
                   WowButton(
-                    title: "Thẻ học chữ",
+                    title: "Thẻ học chữ cái",
                     iconPath: "assets/images/icon_flashcard.png",
                     routeName: AppRoutes.flashcard,
                     colors: [

@@ -130,14 +130,14 @@ class _GameScreenState extends State<GameScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("🎮 Trò chơi tìm chữ"),
+        title: const Text("Trò chơi tìm chữ"),
         backgroundColor: Colors.pinkAccent.shade100,
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Center(
               child: Text(
-                "🔥 Liên tiếp: $combo",
+                "🔥: $combo",
                 style: const TextStyle(
                     fontSize: 18, fontWeight: FontWeight.bold),
               ),
