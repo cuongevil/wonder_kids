@@ -5,8 +5,8 @@ class GameCard extends StatelessWidget {
   final String title;
   final IconData icon;
   final Color color;
-  final VoidCallback onTap;
   final String? progress;
+  final VoidCallback onTap;
 
   const GameCard({
     super.key,
@@ -20,45 +20,69 @@ class GameCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(colors: [color.withOpacity(0.8), color]),
+          gradient: LinearGradient(
+            colors: [color.withOpacity(0.9), color.withOpacity(0.7)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(20),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
-              color: Colors.black26,
-              blurRadius: 6,
-              offset: Offset(2, 3),
+              color: color.withOpacity(0.4),
+              blurRadius: 10,
+              offset: const Offset(3, 6),
             ),
           ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: [
-            Icon(icon, size: 48, color: Colors.white),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+            Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Icon(icon, size: 36, color: Colors.white),
               ),
             ),
-            if (progress != null) ...[
-              const SizedBox(height: 6),
-              Text(
-                progress!,
+            Center(
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                   color: Colors.white,
-                  fontWeight: FontWeight.w600,
+                  shadows: [
+                    Shadow(
+                      offset: Offset(1, 1),
+                      blurRadius: 3,
+                      color: Colors.black26,
+                    )
+                  ],
                 ),
               ),
-            ]
+            ),
+            if (progress != null)
+              Positioned(
+                left: 12,
+                bottom: 12,
+                child: Row(
+                  children: [
+                    const Icon(Icons.star, color: Colors.yellow, size: 20),
+                    const SizedBox(width: 4),
+                    Text(
+                      progress!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  ],
+                ),
+              ),
           ],
         ),
       ),
