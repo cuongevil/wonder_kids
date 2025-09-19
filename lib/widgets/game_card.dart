@@ -5,9 +5,8 @@ class GameCard extends StatelessWidget {
   final String title;
   final IconData icon;
   final Color color;
-  final int score;
-  final int round;
   final VoidCallback onTap;
+  final String? progress;
 
   const GameCard({
     super.key,
@@ -16,17 +15,17 @@ class GameCard extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.onTap,
-    this.score = 0,
-    this.round = 0,
+    this.progress,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
       child: Container(
         decoration: BoxDecoration(
-          color: color.withOpacity(0.85),
+          gradient: LinearGradient(colors: [color.withOpacity(0.8), color]),
           borderRadius: BorderRadius.circular(20),
           boxShadow: const [
             BoxShadow(
@@ -40,19 +39,26 @@ class GameCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 48, color: Colors.white),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Text(
               title,
               style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              "⭐ $score/$round",
-              style: const TextStyle(color: Colors.white70, fontSize: 14),
-            ),
+            if (progress != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                progress!,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ]
           ],
         ),
       ),

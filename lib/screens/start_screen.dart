@@ -1,8 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import '../widgets/game_card.dart';
-import '../widgets/learning_button.dart';
+
+import '../models/vn_letter.dart';
 import '../models/game_info.dart';
-import '../config/app_routes.dart';
+import '../models/learning_info.dart';
+import '../widgets/learning_button.dart';
+import '../widgets/game_card.dart';
+import '../services/game_registry.dart';
+import '../services/learning_registry.dart';
 
 class StartScreen extends StatefulWidget {
   const StartScreen({super.key});
@@ -11,48 +16,20 @@ class StartScreen extends StatefulWidget {
   State<StartScreen> createState() => _StartScreenState();
 }
 
-class _StartScreenState extends State<StartScreen> {
-  late Future<List<GameInfo>> _gamesFuture;
+class _StartScreenState extends State<StartScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _gamesFuture = _loadGames();
+    _tabController = TabController(length: 2, vsync: this);
   }
 
-  Future<List<GameInfo>> _loadGames() async {
-    final rawGames = [
-      GameInfo(
-        id: "game1",
-        title: "Tìm chữ",
-        icon: Icons.search,
-        color: Colors.pink,
-        route: AppRoutes.gameFind,
-      ),
-      GameInfo(
-        id: "game2",
-        title: "Ghép hình",
-        icon: Icons.image,
-        color: Colors.teal,
-        route: AppRoutes.gameMatch,
-      ),
-      GameInfo(
-        id: "game3",
-        title: "Điền chữ",
-        icon: Icons.edit,
-        color: Colors.blue,
-        route: AppRoutes.gameFill,
-      ),
-      GameInfo(
-        id: "game4",
-        title: "Nghe & chọn",
-        icon: Icons.volume_up,
-        color: Colors.orange,
-        route: AppRoutes.gameListen,
-      ),
-    ];
-
-    return Future.wait(rawGames.map(GameInfo.withProgress));
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -70,81 +47,28 @@ class _StartScreenState extends State<StartScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              const SizedBox(height: 16),
-              Image.asset("assets/images/mascot.png", height: 120),
-
-              const SizedBox(height: 24),
-              const Text(
-                "📚 Học",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.deepPurple,
-                ),
+              const SizedBox(height: 8),
+              Hero(
+                tag: "mascot",
+                child: Image.asset("assets/images/mascot.png", height: 100),
               ),
-              const SizedBox(height: 16),
-
-              LearningButton(
-                title: "Học theo thứ tự",
-                icon: Icons.sort_by_alpha,
-                gradient: [Colors.orange, Colors.yellow],
-                onTap: () => Navigator.pushNamed(context, AppRoutes.home),
+              TabBar(
+                controller: _tabController,
+                indicatorColor: Colors.deepPurple,
+                labelColor: Colors.deepPurple,
+                unselectedLabelColor: Colors.grey,
+                tabs: const [
+                  Tab(icon: Icon(Icons.menu_book), text: "Học"),
+                  Tab(icon: Icon(Icons.videogame_asset), text: "Trò chơi"),
+                ],
               ),
-              const SizedBox(height: 16),
-              LearningButton(
-                title: "Flashcard",
-                icon: Icons.style,
-                gradient: [Colors.blue, Colors.purple],
-                onTap: () => Navigator.pushNamed(context, AppRoutes.flashcard),
-              ),
-
-              const SizedBox(height: 28),
-              const Text(
-                "🎮 Trò chơi",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.deepPurple,
-                ),
-              ),
-              const SizedBox(height: 12),
-
               Expanded(
-                child: FutureBuilder<List<GameInfo>>(
-                  future: _gamesFuture,
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    final games = snapshot.data!;
-                    return GridView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      itemCount: games.length,
-                      gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                      ),
-                      itemBuilder: (context, i) {
-                        final g = games[i];
-                        return GameCard(
-                          gameId: g.id,
-                          title: g.title,
-                          icon: g.icon,
-                          color: g.color,
-                          score: g.score,
-                          round: g.round,
-                          onTap: () async {
-                            await Navigator.pushNamed(context, g.route);
-                            setState(() {
-                              _gamesFuture = _loadGames(); // 🔄 reload khi back
-                            });
-                          },
-                        );
-                      },
-                    );
-                  },
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildRegistryList(isLearning: true),
+                    _buildRegistryList(isLearning: false),
+                  ],
                 ),
               ),
             ],
@@ -152,5 +76,109 @@ class _StartScreenState extends State<StartScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildRegistryList({required bool isLearning}) {
+    if (isLearning) {
+      final learnings = LearningRegistry.getLearnings();
+      return ListView.separated(
+        padding: const EdgeInsets.all(24),
+        itemCount: learnings.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 16),
+        itemBuilder: (context, i) {
+          final l = learnings[i];
+          return FutureBuilder<String?>(
+            future: LearningRegistry.getProgress(l),
+            builder: (context, snapshot) {
+              final progress = snapshot.data;
+              return TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: 1),
+                duration: Duration(milliseconds: 400 + i * 100),
+                builder: (context, value, child) {
+                  return Opacity(
+                    opacity: value,
+                    child: Transform.translate(
+                      offset: Offset(0, 30 * (1 - value)),
+                      child: child,
+                    ),
+                  );
+                },
+                child: LearningButton(
+                  title: l.title,
+                  icon: l.icon,
+                  gradient: l.gradient,
+                  progress: progress,
+                  onTap: () async {
+                    if (l.id == "learn3") {
+                      final data = await DefaultAssetBundle.of(context)
+                          .loadString('assets/config/letters.json');
+                      final letters = (jsonDecode(data) as List)
+                          .map((e) => VnLetter.fromJson(e))
+                          .toList();
+
+                      Navigator.pushNamed(
+                        context,
+                        l.route,
+                        arguments: {
+                          "letters": letters,
+                          "startIndex": 0,
+                        },
+                      ).then((_) => setState(() {}));
+                    } else {
+                      Navigator.pushNamed(context, l.route)
+                          .then((_) => setState(() {}));
+                    }
+                  },
+                ),
+              );
+            },
+          );
+        },
+      );
+    } else {
+      final games = GameRegistry.getGames();
+      return GridView.builder(
+        padding: const EdgeInsets.all(24),
+        itemCount: games.length,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+        ),
+        itemBuilder: (context, i) {
+          final g = games[i];
+          return FutureBuilder<String?>(
+            future: GameRegistry.getProgress(g),
+            builder: (context, snapshot) {
+              final progress = snapshot.data;
+              return TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: 1),
+                duration: Duration(milliseconds: 400 + i * 120),
+                builder: (context, value, child) {
+                  return Opacity(
+                    opacity: value,
+                    child: Transform.translate(
+                      offset: Offset(0, 40 * (1 - value)),
+                      child: child,
+                    ),
+                  );
+                },
+                child: GameCard(
+                  gameId: g.id,
+                  title: g.title,
+                  icon: g.icon,
+                  color: g.color,
+                  progress: progress,
+                  onTap: () {
+                    Navigator.pushNamed(context, g.route)
+                        .then((_) => setState(() {}));
+                  },
+                ),
+              );
+            },
+          );
+        },
+      );
+    }
   }
 }

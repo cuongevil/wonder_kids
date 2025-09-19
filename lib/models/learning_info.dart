@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 
-class GameInfo {
+class LearningInfo {
   final String id;
   final String title;
   final IconData icon;
-  final Color color;
+  final List<Color> gradient;
   final String route;
   final int total;
 
-  const GameInfo({
+  const LearningInfo({
     required this.id,
     required this.title,
     required this.icon,
-    required this.color,
+    required this.gradient,
     required this.route,
     this.total = 0,
   });
