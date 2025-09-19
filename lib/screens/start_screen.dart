@@ -1,16 +1,62 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
-
+import '../widgets/game_card.dart';
+import '../widgets/learning_button.dart';
+import '../models/game_info.dart';
 import '../config/app_routes.dart';
-import '../utils/responsive.dart';
 
-class StartScreen extends StatelessWidget {
+class StartScreen extends StatefulWidget {
   const StartScreen({super.key});
 
   @override
+  State<StartScreen> createState() => _StartScreenState();
+}
+
+class _StartScreenState extends State<StartScreen> {
+  late Future<List<GameInfo>> _gamesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _gamesFuture = _loadGames();
+  }
+
+  Future<List<GameInfo>> _loadGames() async {
+    final rawGames = [
+      GameInfo(
+        id: "game1",
+        title: "Tìm chữ",
+        icon: Icons.search,
+        color: Colors.pink,
+        route: AppRoutes.gameFind,
+      ),
+      GameInfo(
+        id: "game2",
+        title: "Ghép hình",
+        icon: Icons.image,
+        color: Colors.teal,
+        route: AppRoutes.gameMatch,
+      ),
+      GameInfo(
+        id: "game3",
+        title: "Điền chữ",
+        icon: Icons.edit,
+        color: Colors.blue,
+        route: AppRoutes.gameFill,
+      ),
+      GameInfo(
+        id: "game4",
+        title: "Nghe & chọn",
+        icon: Icons.volume_up,
+        color: Colors.orange,
+        route: AppRoutes.gameListen,
+      ),
+    ];
+
+    return Future.wait(rawGames.map(GameInfo.withProgress));
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final r = Responsive(context);
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -22,290 +68,87 @@ class StartScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: Stack(
+          child: Column(
             children: [
-              // ⭐ Sao bay nền
-              const FloatingBackground(),
+              const SizedBox(height: 16),
+              Image.asset("assets/images/mascot.png", height: 120),
 
-              Column(
-                children: [
-                  const SizedBox(height: 12),
+              const SizedBox(height: 24),
+              const Text(
+                "📚 Học",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple,
+                ),
+              ),
+              const SizedBox(height: 16),
 
-                  // 🐙 Mascot có animation
-                  const BouncingMascot(),
+              LearningButton(
+                title: "Học theo thứ tự",
+                icon: Icons.sort_by_alpha,
+                gradient: [Colors.orange, Colors.yellow],
+                onTap: () => Navigator.pushNamed(context, AppRoutes.home),
+              ),
+              const SizedBox(height: 16),
+              LearningButton(
+                title: "Flashcard",
+                icon: Icons.style,
+                gradient: [Colors.blue, Colors.purple],
+                onTap: () => Navigator.pushNamed(context, AppRoutes.flashcard),
+              ),
 
-                  const SizedBox(height: 24),
+              const SizedBox(height: 28),
+              const Text(
+                "🎮 Trò chơi",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple,
+                ),
+              ),
+              const SizedBox(height: 12),
 
-                  // 🎨 Các nút WOW
-                  WowButton(
-                    title: "Học theo thứ tự",
-                    iconPath: "assets/images/icon_book.png",
-                    routeName: AppRoutes.home,
-                    colors: [
-                      Colors.pinkAccent,
-                      Colors.orangeAccent,
-                      Colors.yellow,
-                    ],
-                  ),
-                  WowButton(
-                    title: "Thẻ học chữ cái",
-                    iconPath: "assets/images/icon_flashcard.png",
-                    routeName: AppRoutes.flashcard,
-                    colors: [
-                      Colors.lightBlueAccent,
-                      Colors.purpleAccent,
-                      Colors.blueAccent,
-                    ],
-                  ),
-                  WowButton(
-                    title: "Trò chơi tìm chữ",
-                    iconPath: "assets/images/icon_game.png",
-                    routeName: AppRoutes.game,
-                    colors: [
-                      Colors.yellowAccent,
-                      Colors.pinkAccent,
-                      Colors.redAccent,
-                    ],
-                  ),
-
-                  const Spacer(),
-                ],
+              Expanded(
+                child: FutureBuilder<List<GameInfo>>(
+                  future: _gamesFuture,
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final games = snapshot.data!;
+                    return GridView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      itemCount: games.length,
+                      gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                      ),
+                      itemBuilder: (context, i) {
+                        final g = games[i];
+                        return GameCard(
+                          gameId: g.id,
+                          title: g.title,
+                          icon: g.icon,
+                          color: g.color,
+                          score: g.score,
+                          round: g.round,
+                          onTap: () async {
+                            await Navigator.pushNamed(context, g.route);
+                            setState(() {
+                              _gamesFuture = _loadGames(); // 🔄 reload khi back
+                            });
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// 🐙 Mascot nhún nhảy
-class BouncingMascot extends StatefulWidget {
-  const BouncingMascot({super.key});
-
-  @override
-  State<BouncingMascot> createState() => _BouncingMascotState();
-}
-
-class _BouncingMascotState extends State<BouncingMascot>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _c;
-
-  @override
-  void initState() {
-    super.initState();
-    _c = AnimationController(vsync: this, duration: const Duration(seconds: 3))
-      ..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final r = Responsive(context);
-    return ScaleTransition(
-      scale: Tween(
-        begin: 0.95,
-        end: 1.05,
-      ).animate(CurvedAnimation(parent: _c, curve: Curves.easeInOut)),
-      child: RotationTransition(
-        turns: Tween(begin: -0.01, end: 0.01).animate(_c),
-        child: Image.asset(
-          "assets/images/mascot.png",
-          height: r.hp(r.isSmall ? 25 : 30),
-          errorBuilder: (_, __, ___) =>
-              const Icon(Icons.pets, size: 120, color: Colors.white70),
-        ),
-      ),
-    );
-  }
-}
-
-/// ⭐ Sao bay nền
-class FloatingBackground extends StatelessWidget {
-  const FloatingBackground({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final r = Responsive(context);
-    return Stack(
-      children: List.generate(
-        6,
-        (i) => _FloatingItem(left: 40.0 + i * 50, delay: i * 500),
-      ),
-    );
-  }
-}
-
-class _FloatingItem extends StatefulWidget {
-  final double left;
-  final int delay;
-
-  const _FloatingItem({required this.left, required this.delay});
-
-  @override
-  State<_FloatingItem> createState() => _FloatingItemState();
-}
-
-class _FloatingItemState extends State<_FloatingItem>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _c;
-
-  @override
-  void initState() {
-    super.initState();
-    _c = AnimationController(vsync: this, duration: const Duration(seconds: 6))
-      ..repeat();
-  }
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final r = Responsive(context);
-    final random = math.Random();
-    return AnimatedBuilder(
-      animation: _c,
-      builder: (context, child) {
-        final dy =
-            MediaQuery.of(context).size.height *
-            (1 - (_c.value + widget.delay / 6000) % 1);
-        return Positioned(
-          left: widget.left + random.nextDouble() * 20,
-          top: dy,
-          child: Opacity(
-            opacity: 0.6,
-            child: Icon(
-              Icons.star,
-              size: 18,
-              color: Colors.white.withOpacity(0.7),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-/// 🍭 Nút WOW cho bé
-class WowButton extends StatefulWidget {
-  final String title;
-  final String iconPath;
-  final String routeName;
-  final List<Color> colors;
-
-  const WowButton({
-    super.key,
-    required this.title,
-    required this.iconPath,
-    required this.routeName,
-    required this.colors,
-  });
-
-  @override
-  State<WowButton> createState() => _WowButtonState();
-}
-
-class _WowButtonState extends State<WowButton>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _c;
-  bool _pressed = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _c = AnimationController(vsync: this, duration: const Duration(seconds: 3))
-      ..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final r = Responsive(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
-      child: GestureDetector(
-        onTapDown: (_) => setState(() => _pressed = true),
-        onTapUp: (_) {
-          setState(() => _pressed = false);
-          Navigator.pushNamed(context, widget.routeName);
-        },
-        onTapCancel: () => setState(() => _pressed = false),
-        child: AnimatedBuilder(
-          animation: _c,
-          builder: (context, child) {
-            final t = (0.5 + 0.5 * (1 + math.sin(_c.value * math.pi * 2)));
-            final scale = (_pressed ? 0.93 : 0.97) + 0.06 * t;
-
-            return Transform.scale(
-              scale: scale,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 20,
-                  horizontal: 20,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: widget.colors,
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(60),
-                  boxShadow: [
-                    BoxShadow(
-                      color: widget.colors.last.withOpacity(0.6),
-                      blurRadius: 15,
-                      spreadRadius: 1,
-                    ),
-                  ],
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.8),
-                    width: 3,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      widget.iconPath,
-                      height: 40,
-                      errorBuilder: (_, __, ___) =>
-                          const Icon(Icons.star, size: 36, color: Colors.white),
-                    ),
-                    const SizedBox(width: 16),
-                    Text(
-                      widget.title,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black26,
-                            offset: Offset(2, 2),
-                            blurRadius: 3,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
         ),
       ),
     );
