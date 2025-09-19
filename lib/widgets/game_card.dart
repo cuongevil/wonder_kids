@@ -5,8 +5,8 @@ class GameCard extends StatelessWidget {
   final String title;
   final IconData icon;
   final Color color;
-  final String? progress;
   final VoidCallback onTap;
+  final double progress; // ✅ thêm progress
 
   const GameCard({
     super.key,
@@ -15,7 +15,7 @@ class GameCard extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.onTap,
-    this.progress,
+    this.progress = 0.0,
   });
 
   @override
@@ -24,65 +24,43 @@ class GameCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [color.withOpacity(0.9), color.withOpacity(0.7)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
+          color: color.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
             BoxShadow(
-              color: color.withOpacity(0.4),
-              blurRadius: 10,
-              offset: const Offset(3, 6),
-            ),
+              color: Colors.black26,
+              blurRadius: 6,
+              offset: Offset(2, 3),
+            )
           ],
         ),
-        child: Stack(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Icon(icon, size: 36, color: Colors.white),
+            Icon(icon, size: 40, color: Colors.white),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
+              textAlign: TextAlign.center,
             ),
-            Center(
-              child: Text(
-                title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      offset: Offset(1, 1),
-                      blurRadius: 3,
-                      color: Colors.black26,
-                    )
-                  ],
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 6,
+                  backgroundColor: Colors.white24,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ),
             ),
-            if (progress != null)
-              Positioned(
-                left: 12,
-                bottom: 12,
-                child: Row(
-                  children: [
-                    const Icon(Icons.star, color: Colors.yellow, size: 20),
-                    const SizedBox(width: 4),
-                    Text(
-                      progress!,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )
-                  ],
-                ),
-              ),
           ],
         ),
       ),

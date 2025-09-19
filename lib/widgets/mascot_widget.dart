@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/audio_service.dart';
@@ -16,24 +17,49 @@ class _MascotWidgetState extends State<MascotWidget>
   late AnimationController _orbitController;
   late AnimationController _glowController;
 
+  // Biểu cảm khác nhau
+  final List<String> _expressions = [
+    "assets/images/mascot.png",
+    "assets/images/mascot_1.png",
+    "assets/images/mascot_2.png",
+    "assets/images/mascot_3.png",
+    "assets/images/mascot_4.png",
+    "assets/images/mascot_5.png",
+    "assets/images/mascot_6.png",
+    "assets/images/mascot_7.png",
+    "assets/images/mascot_8.png",
+    "assets/images/mascot_9.png",
+    "assets/images/mascot_10.png",
+  ];
+  late String _currentExpression;
+  Timer? _expressionTimer;
+
   @override
   void initState() {
     super.initState();
 
-    // Nhảy nhót
+    _currentExpression = _expressions.first;
+
+    // Animation controllers
     _bounceController =
     AnimationController(vsync: this, duration: const Duration(seconds: 3))
       ..repeat();
 
-    // Quay quanh
     _orbitController =
     AnimationController(vsync: this, duration: const Duration(seconds: 8))
       ..repeat();
 
-    // Glow pulsing
     _glowController =
     AnimationController(vsync: this, duration: const Duration(seconds: 4))
       ..repeat(reverse: true);
+
+    // Random thay đổi biểu cảm 5s/lần
+    _expressionTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      setState(() {
+        _currentExpression =
+            (_expressions..shuffle()).first; // chọn ngẫu nhiên
+      });
+    });
   }
 
   @override
@@ -41,6 +67,7 @@ class _MascotWidgetState extends State<MascotWidget>
     _bounceController.dispose();
     _orbitController.dispose();
     _glowController.dispose();
+    _expressionTimer?.cancel();
     super.dispose();
   }
 
@@ -52,7 +79,7 @@ class _MascotWidgetState extends State<MascotWidget>
         onTap: () {
           // Khi bé tap → mascot nhảy + phát tiếng cười
           HapticFeedback.lightImpact();
-          AudioService.play("audio/correct.mp3"); // hoặc file tiếng cười riêng
+          AudioService.play("audio/correct.mp3"); // thay bằng audio cười vui
           _bounceController.forward(from: 0.0);
         },
         child: Stack(
@@ -88,13 +115,14 @@ class _MascotWidgetState extends State<MascotWidget>
             AnimatedBuilder(
               animation: _bounceController,
               builder: (context, child) {
-                final offset = math.sin(_bounceController.value * 2 * math.pi) * 8;
+                final offset =
+                    math.sin(_bounceController.value * 2 * math.pi) * 8;
                 return Transform.translate(
                   offset: Offset(0, offset),
                   child: child,
                 );
               },
-              child: Image.asset("assets/images/mascot.png", height: 120),
+              child: Image.asset(_currentExpression, height: 120),
             ),
 
             // Các icon nhỏ bay quanh
@@ -114,7 +142,7 @@ class _MascotWidgetState extends State<MascotWidget>
                     child: Opacity(
                       opacity: 0.7,
                       child: Icon(
-                        i % 2 == 0 ? Icons.star : Icons.favorite,
+                        i.isEven ? Icons.star : Icons.favorite,
                         color: i.isEven ? Colors.yellow : Colors.pinkAccent,
                         size: 18,
                       ),

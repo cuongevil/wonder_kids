@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import '../widgets/learning_button.dart';
 import '../widgets/game_card.dart';
-import '../widgets/mascot_widget.dart'; // mascot nâng cấp
+import '../widgets/mascot_widget.dart';
 import '../models/game_info.dart';
 import '../models/learning_info.dart';
 import '../services/game_registry.dart';
 import '../services/learning_registry.dart';
+import '../services/progress_service.dart';
 
 class StartScreen extends StatefulWidget {
   const StartScreen({super.key});
@@ -46,10 +47,7 @@ class _StartScreenState extends State<StartScreen>
           child: Column(
             children: [
               const SizedBox(height: 8),
-              // 🌟 Mascot nâng cấp
               const MascotWidget(),
-
-              // 🔖 TabBar bubble
               Container(
                 margin:
                 const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
@@ -78,7 +76,6 @@ class _StartScreenState extends State<StartScreen>
                   ],
                 ),
               ),
-
               Expanded(
                 child: TabBarView(
                   controller: _tabController,
@@ -104,24 +101,18 @@ class _StartScreenState extends State<StartScreen>
       separatorBuilder: (_, __) => const SizedBox(height: 16),
       itemBuilder: (context, i) {
         final l = learnings[i];
-        return TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0, end: 1),
-          duration: Duration(milliseconds: 400 + i * 100),
-          builder: (context, value, child) {
-            return Opacity(
-              opacity: value,
-              child: Transform.translate(
-                offset: Offset(0, 40 * (1 - value)),
-                child: child,
-              ),
+        return FutureBuilder<double>(
+          future: ProgressService.getProgress(l.id, l.total),
+          builder: (context, snapshot) {
+            final progress = snapshot.data ?? 0.0;
+            return LearningButton(
+              title: l.title,
+              icon: l.icon,
+              gradient: l.gradient,
+              onTap: () => Navigator.pushNamed(context, l.route),
+              progress: progress,
             );
           },
-          child: LearningButton(
-            title: l.title,
-            icon: l.icon,
-            gradient: l.gradient,
-            onTap: () => Navigator.pushNamed(context, l.route),
-          ),
         );
       },
     );
@@ -140,23 +131,19 @@ class _StartScreenState extends State<StartScreen>
       ),
       itemBuilder: (context, i) {
         final g = games[i];
-        return TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0, end: 1),
-          duration: Duration(milliseconds: 400 + i * 120),
-          builder: (context, value, child) {
-            return Opacity(
-              opacity: value,
-              child: Transform.scale(scale: value, child: child),
+        return FutureBuilder<double>(
+          future: ProgressService.getProgress(g.id, g.total),
+          builder: (context, snapshot) {
+            final progress = snapshot.data ?? 0.0;
+            return GameCard(
+              gameId: g.id,
+              title: g.title,
+              icon: g.icon,
+              color: g.color,
+              progress: progress,
+              onTap: () => Navigator.pushNamed(context, g.route),
             );
           },
-          child: GameCard(
-            gameId: g.id,
-            title: g.title,
-            icon: g.icon,
-            color: g.color,
-            progress: "⭐ 0/${g.total}",
-            onTap: () => Navigator.pushNamed(context, g.route),
-          ),
         );
       },
     );
