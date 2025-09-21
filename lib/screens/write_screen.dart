@@ -21,8 +21,11 @@ class _WriteScreenState extends State<WriteScreen> {
   late int currentIndex;
   final ValueNotifier<List<List<Offset>>> strokesNotifier =
   ValueNotifier<List<List<Offset>>>([]);
-  final List<List<Offset>> _redoStack = []; // ✅ redo stack
+  final List<List<Offset>> _redoStack = [];
+
   Color penColor = Colors.blue;
+  double strokeWidth = 8.0; // ✅ luôn có giá trị mặc định
+  bool showGrid = true;
 
   @override
   void initState() {
@@ -109,7 +112,13 @@ class _WriteScreenState extends State<WriteScreen> {
                 builder: (_, strokes, __) {
                   return SizedBox.expand(
                     child: CustomPaint(
-                      painter: _WritingPainter(strokes, penColor, letter.char),
+                      painter: _WritingPainter(
+                        strokes,
+                        penColor,
+                        strokeWidth,
+                        letter.char,
+                        showGrid,
+                      ),
                     ),
                   );
                 },
@@ -121,33 +130,62 @@ class _WriteScreenState extends State<WriteScreen> {
           Container(
             color: Colors.grey.shade200,
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+            child: Column(
               children: [
-                IconButton(
-                  icon: const Icon(Icons.undo),
-                  tooltip: "Undo",
-                  onPressed: _undo,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.redo),
-                  tooltip: "Redo",
-                  onPressed: _redo,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.clear),
-                  tooltip: "Clear",
-                  onPressed: _clear,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.undo),
+                      tooltip: "Undo",
+                      onPressed: _undo,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.redo),
+                      tooltip: "Redo",
+                      onPressed: _redo,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.clear),
+                      tooltip: "Clear",
+                      onPressed: _clear,
+                    ),
+                    IconButton(
+                      icon: Icon(showGrid ? Icons.grid_off : Icons.grid_on),
+                      tooltip: "Bật/Tắt lưới",
+                      onPressed: () => setState(() => showGrid = !showGrid),
+                    ),
+                    // 🎨 chọn màu bút
+                    Row(
+                      children: [
+                        _buildColorDot(Colors.blue),
+                        _buildColorDot(Colors.red),
+                        _buildColorDot(Colors.green),
+                        _buildColorDot(Colors.orange),
+                        _buildColorDot(Colors.purple),
+                      ],
+                    ),
+                  ],
                 ),
 
-                // 🎨 chọn màu bút
+                // 🖊️ Slider chọn độ dày bút
                 Row(
                   children: [
-                    _buildColorDot(Colors.blue),
-                    _buildColorDot(Colors.red),
-                    _buildColorDot(Colors.green),
-                    _buildColorDot(Colors.orange),
-                    _buildColorDot(Colors.purple),
+                    const Text("Độ dày bút:"),
+                    Expanded(
+                      child: Slider(
+                        value: strokeWidth, // ✅ không null
+                        min: 2,
+                        max: 20,
+                        divisions: 9,
+                        label: strokeWidth.toStringAsFixed(0), // ✅ an toàn
+                        onChanged: (v) {
+                          setState(() {
+                            strokeWidth = v;
+                          });
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -181,12 +219,30 @@ class _WriteScreenState extends State<WriteScreen> {
 class _WritingPainter extends CustomPainter {
   final List<List<Offset>> strokes;
   final Color penColor;
+  final double strokeWidth;
   final String letter;
+  final bool showGrid;
 
-  _WritingPainter(this.strokes, this.penColor, this.letter);
+  _WritingPainter(
+      this.strokes, this.penColor, this.strokeWidth, this.letter, this.showGrid);
 
   @override
   void paint(Canvas canvas, Size size) {
+    // ✅ vẽ lưới tập viết nếu bật
+    if (showGrid) {
+      final gridPaint = Paint()
+        ..color = Colors.grey.withOpacity(0.2)
+        ..strokeWidth = 1;
+
+      const step = 50.0;
+      for (double x = 0; x < size.width; x += step) {
+        canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
+      }
+      for (double y = 0; y < size.height; y += step) {
+        canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+      }
+    }
+
     // chữ cái nền mờ
     final textPainter = TextPainter(
       text: TextSpan(
@@ -212,14 +268,14 @@ class _WritingPainter extends CustomPainter {
     final paint = Paint()
       ..color = penColor
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = 8.0
+      ..strokeWidth = strokeWidth // ✅ độ dày bút theo slider
       ..isAntiAlias = true
       ..style = PaintingStyle.stroke;
 
     // vẽ nét
     for (final stroke in strokes) {
       if (stroke.length == 1) {
-        canvas.drawCircle(stroke.first, 4, paint);
+        canvas.drawCircle(stroke.first, strokeWidth / 2, paint);
       } else if (stroke.length > 1) {
         final path = Path()..moveTo(stroke.first.dx, stroke.first.dy);
         for (int i = 1; i < stroke.length - 1; i++) {
@@ -239,5 +295,9 @@ class _WritingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_WritingPainter oldDelegate) =>
-      oldDelegate.strokes != strokes || oldDelegate.penColor != penColor;
+      oldDelegate.strokes != strokes ||
+          oldDelegate.penColor != penColor ||
+          oldDelegate.strokeWidth != strokeWidth ||
+          oldDelegate.letter != letter ||
+          oldDelegate.showGrid != showGrid;
 }
