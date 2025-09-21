@@ -67,30 +67,54 @@ class AppRoutes {
         );
 
       case letter:
-        final args = settings.arguments as Map<String, dynamic>;
+        final args = settings.arguments as Map<String, dynamic>? ?? {};
+        final letters = args['letters'] as List<VnLetter>? ?? [];
+        final index = args['currentIndex'] as int? ?? 0;
+
+        if (letters.isEmpty) {
+          return _errorRoute("Không có dữ liệu chữ để hiển thị");
+        }
+
         return MaterialPageRoute(
           builder: (_) => LetterScreen(
-            letters: args['letters'] as List<VnLetter>,
-            currentIndex: args['currentIndex'] as int,
+            letters: letters,
+            currentIndex: index,
           ),
           settings: settings,
         );
 
       case write:
-        final args = settings.arguments as Map<String, dynamic>;
+        final args = settings.arguments as Map<String, dynamic>? ?? {};
+        final letters = args['letters'] as List<VnLetter>? ?? [];
+        final index = args['startIndex'] as int? ?? 0;
+
+        if (letters.isEmpty) {
+          return _errorRoute("Không có dữ liệu chữ để luyện viết");
+        }
+
         return MaterialPageRoute(
           builder: (_) => WriteScreen(
-            letters: args['letters'],
-            startIndex: args['startIndex'] ?? 0,
+            letters: letters,
+            startIndex: index,
           ),
+          settings: settings,
         );
 
       default:
-        return MaterialPageRoute(
-          builder: (_) =>
-              const Scaffold(body: Center(child: Text("Route không tồn tại"))),
-          settings: settings,
-        );
+        return _errorRoute("Route không tồn tại");
     }
+  }
+
+  static MaterialPageRoute _errorRoute(String message) {
+    return MaterialPageRoute(
+      builder: (_) => Scaffold(
+        body: Center(
+          child: Text(
+            message,
+            style: const TextStyle(fontSize: 18, color: Colors.red),
+          ),
+        ),
+      ),
+    );
   }
 }

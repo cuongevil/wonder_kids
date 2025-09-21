@@ -18,6 +18,7 @@ dependencies:
   flip_card: ^0.7.0
   confetti: ^0.8.0
   shared_preferences: ^2.2.2
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:

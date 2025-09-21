@@ -1,12 +1,16 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
+
 import '../widgets/learning_button.dart';
 import '../widgets/game_card.dart';
 import '../widgets/mascot_widget.dart';
 import '../models/game_info.dart';
 import '../models/learning_info.dart';
+import '../models/vn_letter.dart';
 import '../services/game_registry.dart';
 import '../services/learning_registry.dart';
 import '../services/progress_service.dart';
+import '../config/app_routes.dart';
 
 class StartScreen extends StatefulWidget {
   const StartScreen({super.key});
@@ -16,7 +20,7 @@ class StartScreen extends StatefulWidget {
 }
 
 class _StartScreenState extends State<StartScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final TabController _tabController;
 
   @override
@@ -70,9 +74,7 @@ class _StartScreenState extends State<StartScreen>
                   unselectedLabelColor: Colors.deepPurple,
                   tabs: const [
                     Tab(icon: Icon(Icons.menu_book, size: 28), text: "Học"),
-                    Tab(
-                        icon: Icon(Icons.videogame_asset, size: 28),
-                        text: "Trò chơi"),
+                    Tab(icon: Icon(Icons.videogame_asset, size: 28), text: "Trò chơi"),
                   ],
                 ),
               ),
@@ -109,7 +111,29 @@ class _StartScreenState extends State<StartScreen>
               title: l.title,
               icon: l.icon,
               gradient: l.gradient,
-              onTap: () => Navigator.pushNamed(context, l.route),
+              onTap: () async {
+                if (l.route == AppRoutes.write) {
+                  // 🔹 Load danh sách chữ cái từ JSON
+                  final letters = await LearningRegistry.loadLetters();
+                  if (letters.isEmpty) return;
+
+                  // 🔹 Random 1 chữ
+                  final randomIndex = Random().nextInt(letters.length);
+
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.write,
+                    arguments: {
+                      'letters': letters,
+                      'startIndex': randomIndex,
+                    },
+                  );
+                } else if (l.route == AppRoutes.home ||
+                    l.route == AppRoutes.flashcard) {
+                  // 🔹 Các màn khác: vẫn push route bình thường
+                  Navigator.pushNamed(context, l.route);
+                }
+              },
               progress: progress,
             );
           },

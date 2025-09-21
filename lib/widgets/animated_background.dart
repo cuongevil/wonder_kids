@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 class AnimatedBackground extends StatefulWidget {
@@ -26,7 +25,7 @@ class _AnimatedBackgroundState extends State<AnimatedBackground>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 10),
+      duration: const Duration(seconds: 12),
     )..repeat();
   }
 
@@ -39,28 +38,38 @@ class _AnimatedBackgroundState extends State<AnimatedBackground>
   List<Widget> _buildFallingEmojis(String letter) {
     final emojis = letterEmojis[letter] ?? ["✨", "☁️"];
     final items = <Widget>[];
-    for (int i = 0; i < 10; i++) {
+
+    for (int i = 0; i < 16; i++) {
       final emoji = emojis[i % emojis.length];
-      final startX =
-          _random.nextDouble() *
-          MediaQuery.of(context).size.width.clamp(200, 400);
+
+      // đa dạng kích thước & tốc độ
+      final size = [20.0, 28.0, 36.0, 44.0][_random.nextInt(4)];
+      final speed = 0.5 + _random.nextDouble() * 1.5; // tốc độ rơi
+      final opacityFactor = 0.4 + _random.nextDouble() * 0.6;
+
+      final startX = _random.nextDouble() * MediaQuery.of(context).size.width;
       final delay = _random.nextDouble();
-      final size = [24.0, 32.0, 40.0][_random.nextInt(3)];
       final rotationDirection = _random.nextBool() ? 1 : -1;
-      final amplitude = 30 + _random.nextDouble() * 40;
+      final amplitude = 20 + _random.nextDouble() * 40; // biên độ lắc ngang
+
       items.add(
         AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
             final value = (_controller.value + delay) % 1.0;
-            final top = MediaQuery.of(context).size.height * value - 50;
+
+            // vị trí rơi
+            final top = MediaQuery.of(context).size.height * value * speed - 50;
             final left = startX + amplitude * sin(value * 2 * pi);
+
+            // xoay nhẹ khi rơi
             final rotation = value * 2 * pi * 0.05 * rotationDirection;
+
             return Positioned(
               top: top,
               left: left,
               child: Opacity(
-                opacity: 1.0 - value,
+                opacity: (1.0 - value) * opacityFactor,
                 child: Transform.rotate(
                   angle: rotation,
                   child: Text(emoji, style: TextStyle(fontSize: size)),
@@ -78,6 +87,7 @@ class _AnimatedBackgroundState extends State<AnimatedBackground>
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        // nền gradient pastel
         Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -98,10 +108,10 @@ class _AnimatedBackgroundState extends State<AnimatedBackground>
 final Map<String, List<String>> letterEmojis = {
   "A": ["👕", "🧥"], // Áo
   "Ă": ["🍽️", "🍚"], // Ăn
-  "Â": ["🍵", "🔥"], // Ấm (ấm trà / ấm áp)
+  "Â": ["🍵", "🔥"], // Ấm
   "B": ["👶", "🎈"], // Bé, Bóng
   "C": ["🐟", "🐶"], // Cá, Cún
-  "D": ["🐐", "🍉"], // Dê, Dưa (dưa hấu)
+  "D": ["🐐", "🍉"], // Dê, Dưa
   "Đ": ["🏮", "🧊"], // Đèn, Đá
   "E": ["👧", "🐦"], // Em, Én
   "Ê": ["🛏️", "🐸"], // Êm, Ếch
@@ -112,17 +122,17 @@ final Map<String, List<String>> letterEmojis = {
   "L": ["🍃", "🍐"], // Lá, Lê
   "M": ["👩", "🐱"], // Mẹ, Mèo
   "N": ["🎀", "👒"], // Nơ, Nón
-  "O": ["🐝", "🍯"], // Ong, (mật) Ong
+  "O": ["🐝", "🍯"], // Ong, Mật
   "Ô": ["🚗", "☂️"], // Ô tô, Ô (dù)
-  "Ơ": ["🗣️", "🏠"], // Ơi, Ở (nhà)
-  "P": ["🍜", "☕"], // Phở, Phin (cà phê)
+  "Ơ": ["🗣️", "🏠"], // Ơi, Ở
+  "P": ["🍜", "☕"], // Phở, Phin
   "Q": ["🍎", "🪭"], // Quả, Quạt
   "R": ["🐢", "🌳"], // Rùa, Rừng
   "S": ["⭐", "📚"], // Sao, Sách
   "T": ["🍤", "🍎"], // Tôm, Táo
   "U": ["👶", "🥤"], // Út, Uống
-  "Ư": ["🌠", "💭"], // Ước, Ưu (ý niệm/ưu tiên)
+  "Ư": ["🌠", "💭"], // Ước, Ưu
   "V": ["🐘", "🌿"], // Voi, Vườn
-  "X": ["🥭", "🚲"], // Xoài, Xe (đạp)
-  "Y": ["❤️", "💡"], // Yêu, Ý (tưởng)
+  "X": ["🥭", "🚲"], // Xoài, Xe
+  "Y": ["❤️", "💡"], // Yêu, Ý
 };

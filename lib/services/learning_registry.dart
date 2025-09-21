@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../config/app_routes.dart';
 import '../models/learning_info.dart';
+import '../models/vn_letter.dart';
 import 'progress_service.dart';
 
 class LearningRegistry {
@@ -45,5 +49,12 @@ class LearningRegistry {
     for (final l in _learnings) {
       await ProgressService.saveProgress(l.id, 0, l.total);
     }
+  }
+
+  /// 🔹 Load toàn bộ chữ cái từ JSON (assets/config/letters.json)
+  static Future<List<VnLetter>> loadLetters() async {
+    final raw = await rootBundle.loadString('assets/config/letters.json');
+    final List<dynamic> data = jsonDecode(raw);
+    return data.map((e) => VnLetter.fromJson(e)).toList();
   }
 }
