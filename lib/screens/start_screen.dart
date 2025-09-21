@@ -1,16 +1,14 @@
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 
-import '../widgets/learning_button.dart';
-import '../widgets/game_card.dart';
-import '../widgets/mascot_widget.dart';
-import '../models/game_info.dart';
-import '../models/learning_info.dart';
-import '../models/vn_letter.dart';
+import '../config/app_routes.dart';
 import '../services/game_registry.dart';
 import '../services/learning_registry.dart';
 import '../services/progress_service.dart';
-import '../config/app_routes.dart';
+import '../widgets/game_card.dart';
+import '../widgets/learning_button.dart';
+import '../widgets/mascot_widget.dart';
 
 class StartScreen extends StatefulWidget {
   const StartScreen({super.key});
@@ -53,8 +51,10 @@ class _StartScreenState extends State<StartScreen>
               const SizedBox(height: 8),
               const MascotWidget(),
               Container(
-                margin:
-                const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 40,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.4),
                   borderRadius: BorderRadius.circular(30),
@@ -69,22 +69,24 @@ class _StartScreenState extends State<StartScreen>
                   ),
                   indicatorSize: TabBarIndicatorSize.tab,
                   labelStyle: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                   labelColor: Colors.white,
                   unselectedLabelColor: Colors.deepPurple,
                   tabs: const [
                     Tab(icon: Icon(Icons.menu_book, size: 28), text: "Học"),
-                    Tab(icon: Icon(Icons.videogame_asset, size: 28), text: "Trò chơi"),
+                    Tab(
+                      icon: Icon(Icons.videogame_asset, size: 28),
+                      text: "Trò chơi",
+                    ),
                   ],
                 ),
               ),
               Expanded(
                 child: TabBarView(
                   controller: _tabController,
-                  children: [
-                    _buildLearnTab(context),
-                    _buildGameTab(context),
-                  ],
+                  children: [_buildLearnTab(context), _buildGameTab(context)],
                 ),
               ),
             ],
@@ -123,10 +125,7 @@ class _StartScreenState extends State<StartScreen>
                   Navigator.pushNamed(
                     context,
                     AppRoutes.write,
-                    arguments: {
-                      'letters': letters,
-                      'startIndex': randomIndex,
-                    },
+                    arguments: {'letters': letters, 'startIndex': randomIndex},
                   );
                 } else if (l.route == AppRoutes.home ||
                     l.route == AppRoutes.flashcard) {

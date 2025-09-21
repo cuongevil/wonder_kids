@@ -19,7 +19,7 @@ class _GameListenState extends GameBaseState<GameListen> {
   String get gameId => "game4";
 
   @override
-  String get title => "Trò chơi nghe & chọn";
+  String get title => "Nghe & Chọn";
 
   List<VnLetter> letters = [];
   VnLetter? targetLetter;

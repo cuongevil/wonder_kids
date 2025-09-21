@@ -19,7 +19,7 @@ class _GameFillState extends GameBaseState<GameFill> {
   String get gameId => "game3";
 
   @override
-  String get title => "Trò chơi điền chữ";
+  String get title => "Chữ còn thiếu";
 
   List<VnLetter> letters = [];
   VnLetter? answerLetter;
