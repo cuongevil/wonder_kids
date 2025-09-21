@@ -21,6 +21,7 @@ class _WriteScreenState extends State<WriteScreen> {
   late int currentIndex;
   final ValueNotifier<List<List<Offset>>> strokesNotifier =
   ValueNotifier<List<List<Offset>>>([]);
+  final List<List<Offset>> _redoStack = []; // ✅ redo stack
   Color penColor = Colors.blue;
 
   @override
@@ -34,12 +35,36 @@ class _WriteScreenState extends State<WriteScreen> {
       setState(() {
         currentIndex++;
         strokesNotifier.value = [];
+        _redoStack.clear();
       });
     } else {
       setState(() {
         currentIndex = 0;
         strokesNotifier.value = [];
+        _redoStack.clear();
       });
+    }
+  }
+
+  void _clear() {
+    strokesNotifier.value = [];
+    _redoStack.clear();
+  }
+
+  void _undo() {
+    if (strokesNotifier.value.isNotEmpty) {
+      final newStrokes = List<List<Offset>>.from(strokesNotifier.value);
+      final last = newStrokes.removeLast();
+      _redoStack.add(last);
+      strokesNotifier.value = newStrokes;
+    }
+  }
+
+  void _redo() {
+    if (_redoStack.isNotEmpty) {
+      final newStrokes = List<List<Offset>>.from(strokesNotifier.value)
+        ..add(_redoStack.removeLast());
+      strokesNotifier.value = newStrokes;
     }
   }
 
@@ -63,31 +88,91 @@ class _WriteScreenState extends State<WriteScreen> {
           ),
         ],
       ),
-      body: GestureDetector(
-        onPanStart: (details) {
-          final newStrokes = List<List<Offset>>.from(strokesNotifier.value)
-            ..add([details.localPosition]);
-          strokesNotifier.value = newStrokes;
-        },
-        onPanUpdate: (details) {
-          final newStrokes = List<List<Offset>>.from(strokesNotifier.value);
-          newStrokes.last.add(details.localPosition);
-          strokesNotifier.value = newStrokes;
-        },
-        child: ValueListenableBuilder<List<List<Offset>>>(
-          valueListenable: strokesNotifier,
-          builder: (_, strokes, __) {
-            return SizedBox.expand(
-              child: CustomPaint(
-                painter: _WritingPainter(strokes, penColor, letter.char),
+      body: Column(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onPanStart: (details) {
+                final newStrokes =
+                List<List<Offset>>.from(strokesNotifier.value)
+                  ..add([details.localPosition]);
+                strokesNotifier.value = newStrokes;
+              },
+              onPanUpdate: (details) {
+                final newStrokes =
+                List<List<Offset>>.from(strokesNotifier.value);
+                newStrokes.last.add(details.localPosition);
+                strokesNotifier.value = newStrokes;
+              },
+              child: ValueListenableBuilder<List<List<Offset>>>(
+                valueListenable: strokesNotifier,
+                builder: (_, strokes, __) {
+                  return SizedBox.expand(
+                    child: CustomPaint(
+                      painter: _WritingPainter(strokes, penColor, letter.char),
+                    ),
+                  );
+                },
               ),
-            );
-          },
-        ),
+            ),
+          ),
+
+          // 🎨 Toolbar
+          Container(
+            color: Colors.grey.shade200,
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.undo),
+                  tooltip: "Undo",
+                  onPressed: _undo,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.redo),
+                  tooltip: "Redo",
+                  onPressed: _redo,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.clear),
+                  tooltip: "Clear",
+                  onPressed: _clear,
+                ),
+
+                // 🎨 chọn màu bút
+                Row(
+                  children: [
+                    _buildColorDot(Colors.blue),
+                    _buildColorDot(Colors.red),
+                    _buildColorDot(Colors.green),
+                    _buildColorDot(Colors.orange),
+                    _buildColorDot(Colors.purple),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => strokesNotifier.value = [],
-        child: const Icon(Icons.clear),
+    );
+  }
+
+  Widget _buildColorDot(Color color) {
+    return GestureDetector(
+      onTap: () => setState(() => penColor = color),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: penColor == color ? Colors.black : Colors.transparent,
+            width: 2,
+          ),
+        ),
       ),
     );
   }
@@ -102,7 +187,7 @@ class _WritingPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // chữ cái nền
+    // chữ cái nền mờ
     final textPainter = TextPainter(
       text: TextSpan(
         text: letter,
