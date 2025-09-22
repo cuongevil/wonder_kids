@@ -30,7 +30,7 @@ class _WriteScreenState extends State<WriteScreen> {
   Color penColor = Colors.blue;
   double strokeWidth = 8.0;
   bool showGuide = true;
-  BrushType brushType = BrushType.normal; // ✅ mặc định
+  BrushType brushType = BrushType.normal;
 
   late ConfettiController _confettiController;
 
@@ -92,7 +92,7 @@ class _WriteScreenState extends State<WriteScreen> {
     final letter = widget.letters[currentIndex];
 
     return Scaffold(
-      resizeToAvoidBottomInset: true, // ✅ cho phép bottomSheet đẩy body lên
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text("Bé tập viết: ${letter.char}"),
         actions: [
@@ -102,7 +102,7 @@ class _WriteScreenState extends State<WriteScreen> {
           ),
         ],
       ),
-      body: Builder( // ✅ lấy context sạch cho bottomSheet
+      body: Builder(
         builder: (scaffoldContext) {
           return Stack(
             children: [
@@ -155,20 +155,17 @@ class _WriteScreenState extends State<WriteScreen> {
                             Icons.undo, "Hoàn tác", _undo, Colors.pink),
                         _buildToolbarButton(
                             Icons.redo, "Làm lại", _redo, Colors.pink),
-                        _buildToolbarButton(
-                            Icons.clear, "Xóa", _clear, Colors.orange),
+                        _buildToolbarButton(Icons.clear, "Xóa", _clear,
+                            Colors.orange),
                         _buildToolbarButton(
                           showGuide ? Icons.grid_off : Icons.grid_on,
                           "Lưới",
                               () => setState(() => showGuide = !showGuide),
                           Colors.blue,
                         ),
-                        _buildToolbarButton(Icons.brush, "Bút", () {
-                          _showBrushOptions(scaffoldContext); // ✅ dùng context này
+                        _buildToolbarButton(Icons.brush, "Bút & Màu", () {
+                          _showBrushOptions(scaffoldContext);
                         }, Colors.green),
-                        _buildToolbarButton(Icons.palette, "Màu", () {
-                          _showColorPalette(scaffoldContext); // ✅ dùng context này
-                        }, Colors.purple),
                       ],
                     ),
                   ),
@@ -233,64 +230,9 @@ class _WriteScreenState extends State<WriteScreen> {
   }
 
   // ================================
-  // ✏️ Brush Options
+  // ✏️ Menu chọn bút & màu pastel
   // ================================
   void _showBrushOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text("✏️ Độ dày nét bút",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              Slider(
-                value: strokeWidth,
-                min: 2,
-                max: 20,
-                divisions: 9,
-                label: strokeWidth.toStringAsFixed(0),
-                onChanged: (v) {
-                  setState(() => strokeWidth = v);
-                },
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text("Hoàn tất"),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // ================================
-  // 🎨 Color Palette
-  // ================================
-  void _showColorPalette(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(16),
-        child: _buildColorPalette(ctx),
-      ),
-    );
-  }
-
-  Widget _buildColorPalette(BuildContext context) {
     final pastelColors = [
       Colors.pink.shade200,
       Colors.purple.shade200,
@@ -314,80 +256,135 @@ class _WriteScreenState extends State<WriteScreen> {
       Colors.orange.shade100,
     ];
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text("🎨 Bảng màu pastel",
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: pastelColors.map((c) {
-              final isSelected =
-                  penColor == c && brushType == BrushType.normal;
-              return InkWell(
-                onTap: () {
-                  setState(() {
-                    penColor = c;
-                    brushType = BrushType.normal;
-                  });
-                  Navigator.of(context).pop();
-                },
-                borderRadius: BorderRadius.circular(50),
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: c,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color:
-                      isSelected ? Colors.white : Colors.grey.shade300,
-                      width: 3,
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: StatefulBuilder(
+            builder: (ctx, setModalState) {
+              return SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("✏️ Độ dày nét bút",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    Slider(
+                      value: strokeWidth,
+                      min: 2,
+                      max: 20,
+                      divisions: 9,
+                      label: strokeWidth.toStringAsFixed(0),
+                      onChanged: (v) {
+                        setModalState(() => strokeWidth = v);
+                        setState(() => strokeWidth = v);
+                      },
                     ),
-                    boxShadow: isSelected
-                        ? [
-                      BoxShadow(
-                        color: c.withOpacity(0.6),
-                        blurRadius: 8,
-                        spreadRadius: 2,
-                      )
-                    ]
-                        : [],
-                  ),
-                  child: isSelected
-                      ? const Icon(Icons.check,
-                      color: Colors.white, size: 18)
-                      : null,
+                    const SizedBox(height: 16),
+
+                    const Text("🎨 Bảng màu pastel",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: pastelColors.map((c) {
+                        final isSelected =
+                            penColor == c && brushType == BrushType.normal;
+                        return InkWell(
+                          onTap: () {
+                            setModalState(() {
+                              penColor = c;
+                              brushType = BrushType.normal;
+                            });
+                            setState(() {
+                              penColor = c;
+                              brushType = BrushType.normal;
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(50),
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: c,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isSelected
+                                    ? Colors.white
+                                    : Colors.grey.shade300,
+                                width: 3,
+                              ),
+                              boxShadow: isSelected
+                                  ? [
+                                BoxShadow(
+                                  color: c.withOpacity(0.6),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                )
+                              ]
+                                  : [],
+                            ),
+                            child: isSelected
+                                ? const Icon(Icons.check,
+                                color: Colors.white, size: 18)
+                                : null,
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 16),
+
+                    const Text("✨ Kiểu bút",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 12,
+                      children: [
+                        _buildSelectableBrush(setModalState,
+                            "✏️", "Thường", BrushType.normal),
+                        _buildSelectableBrush(setModalState,
+                            "🌈", "Cầu vồng", BrushType.rainbow),
+                        _buildSelectableBrush(setModalState,
+                            "🔥", "Neon", BrushType.neon),
+                        _buildSelectableBrush(setModalState,
+                            "✨", "Nhũ", BrushType.glitter),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        child: const Text("Hoàn tất"),
+                      ),
+                    ),
+                  ],
                 ),
               );
-            }).toList(),
+            },
           ),
-          const SizedBox(height: 16),
-          const Text("✨ Bút đặc biệt",
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 12,
-            children: [
-              _buildSpecialBrush("🌈", "Cầu vồng", BrushType.rainbow),
-              _buildSpecialBrush("🔥", "Neon", BrushType.neon),
-              _buildSpecialBrush("✨", "Nhũ", BrushType.glitter),
-            ],
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildSpecialBrush(String emoji, String label, BrushType type) {
+  // Helper: nút chọn kiểu bút có highlight ngay
+  Widget _buildSelectableBrush(
+      void Function(void Function()) setModalState,
+      String emoji,
+      String label,
+      BrushType type) {
     final isSelected = brushType == type;
     return InkWell(
       onTap: () {
+        setModalState(() => brushType = type);
         setState(() => brushType = type);
-        Navigator.of(context).pop();
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
@@ -396,7 +393,9 @@ class _WriteScreenState extends State<WriteScreen> {
           color: isSelected ? Colors.pink.shade100 : Colors.grey.shade200,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-              color: isSelected ? Colors.pink : Colors.transparent, width: 2),
+            color: isSelected ? Colors.pink : Colors.transparent,
+            width: 2,
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -426,7 +425,7 @@ class _WritingPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 🟦 Dòng kẻ tập viết chuẩn
+    // 🟦 Dòng kẻ tập viết
     if (showGuide) {
       final lineBold = Paint()
         ..color = Colors.blue.shade300
@@ -444,7 +443,7 @@ class _WritingPainter extends CustomPainter {
       canvas.drawLine(Offset(0, bottom), Offset(size.width, bottom), lineBold);
     }
 
-    // 🅰️ Chữ nền xám mờ
+    // 🅰️ Chữ nền mờ
     final textPainter = TextPainter(
       text: TextSpan(
         text: letter,
@@ -465,7 +464,7 @@ class _WritingPainter extends CustomPainter {
       ),
     );
 
-    // 🖊️ Bút vẽ
+    // ✏️ Vẽ nét bút
     for (final stroke in strokes) {
       if (stroke.isEmpty) continue;
 
