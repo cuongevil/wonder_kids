@@ -6,7 +6,6 @@ class LearningButton extends StatefulWidget {
   final String title;
   final IconData icon;
   final List<Color> gradient;
-  final double progress;
   final VoidCallback onTap;
 
   const LearningButton({
@@ -14,7 +13,6 @@ class LearningButton extends StatefulWidget {
     required this.title,
     required this.icon,
     required this.gradient,
-    required this.progress,
     required this.onTap,
   });
 
@@ -121,11 +119,6 @@ class _LearningButtonState extends State<LearningButton>
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
-                  ),
-                  subtitle: LinearProgressIndicator(
-                    value: widget.progress,
-                    backgroundColor: Colors.white.withOpacity(0.3),
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                   onTap: _handleTap,
                 ),

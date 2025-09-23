@@ -39,10 +39,9 @@ class _GameFindState extends GameBaseState<GameFind>
   final int maxRound = 5;
   int level = 1;
 
-  // ⭐ hệ thống sao + 👑 vương miện
-  int starCount = 0;
-  int streak = 0;
-  int crownCount = 0;
+  int starCount = 0; // ⭐ mỗi câu đúng +1
+  int streak = 0;    // chuỗi đúng liên tục
+  int crownCount = 0; // 👑 cứ 5 sao → +1 vương miện
 
   final GlobalKey _starKey = GlobalKey();
   OverlayEntry? _starOverlay;
@@ -125,15 +124,13 @@ class _GameFindState extends GameBaseState<GameFind>
       await onAnswer(true);
 
       setState(() {
-        round++; // ✅ chỉ tăng 1 lần duy nhất
+        starCount++; // ✅ chỉ cộng sao nếu đúng
         streak++;
         if (streak % 3 == 0) {
           _playSound("star.mp3");
           _showFlyingStar();
         }
       });
-
-      Future.delayed(const Duration(seconds: 2), _nextRound);
     } else {
       _playSound("wrong.mp3");
       await onAnswer(false);
@@ -141,11 +138,14 @@ class _GameFindState extends GameBaseState<GameFind>
       setState(() {
         streak = 0;
       });
-
-      Future.delayed(const Duration(seconds: 1), () {
-        setState(() => selected = null);
-      });
     }
+
+    // ✅ luôn next round (đúng hay sai)
+    setState(() {
+      round++;
+    });
+
+    Future.delayed(const Duration(seconds: 1), _nextRound);
   }
 
   void _showFlyingStar() {
@@ -164,8 +164,7 @@ class _GameFindState extends GameBaseState<GameFind>
         end: starTargetPos,
         onComplete: () {
           setState(() {
-            starCount++;
-            // 👑 nếu đủ 5 sao thì +1 vương miện
+            // 👑 đủ 5 sao thì +1 vương miện
             if (starCount % 5 == 0) {
               crownCount++;
               _playSound("crown.mp3");

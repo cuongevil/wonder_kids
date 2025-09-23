@@ -133,7 +133,6 @@ class _StartScreenState extends State<StartScreen>
                   Navigator.pushNamed(context, l.route);
                 }
               },
-              progress: progress,
             );
           },
         );
@@ -163,7 +162,6 @@ class _StartScreenState extends State<StartScreen>
               title: g.title,
               icon: g.icon,
               color: g.color,
-              progress: progress,
               onTap: () => Navigator.pushNamed(context, g.route),
             );
           },

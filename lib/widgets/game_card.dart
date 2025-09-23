@@ -7,7 +7,6 @@ class GameCard extends StatefulWidget {
   final String title;
   final IconData icon;
   final Color color;
-  final double progress;
   final VoidCallback onTap;
 
   const GameCard({
@@ -16,7 +15,6 @@ class GameCard extends StatefulWidget {
     required this.title,
     required this.icon,
     required this.color,
-    required this.progress,
     required this.onTap,
   });
 
@@ -97,47 +95,39 @@ class _GameCardState extends State<GameCard> with TickerProviderStateMixin {
               scale: scale,
               child: GestureDetector(
                 onTap: _handleTap,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: widget.color,
-                    borderRadius: BorderRadius.circular(25),
-                    boxShadow: [
-                      BoxShadow(
-                        color: widget.color.withOpacity(0.5),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Transform.translate(
-                        offset: Offset(shake, 0),
-                        child: Icon(widget.icon, size: 40, color: Colors.white),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        widget.title,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.baloo2(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                child: AspectRatio( // ✅ vuông đều
+                  aspectRatio: 1,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: widget.color,
+                      borderRadius: BorderRadius.circular(25),
+                      boxShadow: [
+                        BoxShadow(
+                          color: widget.color.withOpacity(0.5),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: LinearProgressIndicator(
-                          value: widget.progress,
-                          backgroundColor: Colors.white.withOpacity(0.3),
-                          valueColor:
-                          AlwaysStoppedAnimation<Color>(Colors.white),
-                          minHeight: 6,
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Transform.translate(
+                          offset: Offset(shake, 0),
+                          child: Icon(widget.icon, size: 40, color: Colors.white),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 8),
+                        Text(
+                          widget.title,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.baloo2(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
