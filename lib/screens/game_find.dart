@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
@@ -39,9 +40,9 @@ class _GameFindState extends GameBaseState<GameFind>
   final int maxRound = 5;
   int level = 1;
 
-  int starCount = 0; // ⭐ mỗi câu đúng +1
-  int streak = 0;    // chuỗi đúng liên tục
-  int crownCount = 0; // 👑 cứ 5 sao → +1 vương miện
+  int streak = 0;        // ⭐ chuỗi đúng liên tiếp hiện tại
+  int maxStreak = 0;     // 🔥 chuỗi dài nhất trong level
+  int totalCorrect = 0;  // 👑 tổng số câu đúng
 
   final GlobalKey _starKey = GlobalKey();
   OverlayEntry? _starOverlay;
@@ -59,23 +60,30 @@ class _GameFindState extends GameBaseState<GameFind>
     "assets/images/mascot_10.png",
   ];
 
+  final pastelColors = [
+    [Colors.pinkAccent, Colors.pink.shade100],
+    [Colors.lightBlueAccent, Colors.blue.shade100],
+    [Colors.lightGreen, Colors.green.shade100],
+    [Colors.orangeAccent, Colors.orange.shade100],
+    [Colors.purpleAccent, Colors.purple.shade100],
+  ];
+
   @override
   void initState() {
     super.initState();
     _loadLetters();
 
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 1200),
       vsync: this,
+    )..repeat();
+
+    _scaleAnimation = Tween<double>(begin: 0.9, end: 1.1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
-    );
-
-    _confettiController = ConfettiController(
-      duration: const Duration(seconds: 2),
-    );
+    _confettiController =
+        ConfettiController(duration: const Duration(seconds: 2));
   }
 
   @override
@@ -98,7 +106,6 @@ class _GameFindState extends GameBaseState<GameFind>
 
   void _nextRound() {
     if (letters.isEmpty) return;
-
     if (round >= maxRound) {
       _showLevelComplete();
       return;
@@ -117,8 +124,6 @@ class _GameFindState extends GameBaseState<GameFind>
       selected = null;
       isCorrect = false;
     });
-
-    _controller.forward(from: 0);
   }
 
   Future<void> _playSound(String file) async {
@@ -137,58 +142,23 @@ class _GameFindState extends GameBaseState<GameFind>
       await onAnswer(true);
 
       setState(() {
-        starCount++; // ✅ chỉ cộng sao nếu đúng
-        streak++;
-        if (streak % 3 == 0) {
-          _playSound("star.mp3");
-          _showFlyingStar();
+        totalCorrect++;   // 👑 tổng số câu đúng
+        streak++;         // ⭐ chuỗi hiện tại
+        if (streak > maxStreak) {
+          maxStreak = streak; // 🔥 cập nhật kỷ lục chuỗi
         }
       });
     } else {
       _playSound("wrong.mp3");
       await onAnswer(false);
+
       setState(() {
-        streak = 0;
+        streak = 0; // ❌ sai thì reset chuỗi hiện tại
       });
     }
 
-    // ✅ luôn next round (đúng hay sai)
-    setState(() {
-      round++;
-    });
-
+    setState(() => round++);
     Future.delayed(const Duration(seconds: 1), _nextRound);
-  }
-
-  void _showFlyingStar() {
-    final overlay = Overlay.of(context);
-    if (overlay == null) return;
-
-    final renderBox = _starKey.currentContext?.findRenderObject() as RenderBox?;
-    final starTargetPos = renderBox?.localToGlobal(Offset.zero) ?? Offset.zero;
-
-    final screenSize = MediaQuery.of(context).size;
-    final startPos = Offset(screenSize.width / 2, screenSize.height / 2);
-
-    final entry = OverlayEntry(
-      builder: (_) => FlyingStar(
-        start: startPos,
-        end: starTargetPos,
-        onComplete: () {
-          setState(() {
-            if (starCount % 5 == 0) {
-              crownCount++;
-              _playSound("crown.mp3");
-            }
-          });
-          _starOverlay?.remove();
-          _starOverlay = null;
-        },
-      ),
-    );
-
-    overlay.insert(entry);
-    _starOverlay = entry;
   }
 
   void _showLevelComplete() {
@@ -200,8 +170,7 @@ class _GameFindState extends GameBaseState<GameFind>
       builder: (_) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
+              borderRadius: BorderRadius.circular(30)),
           backgroundColor: Colors.transparent,
           child: Stack(
             alignment: Alignment.center,
@@ -226,34 +195,24 @@ class _GameFindState extends GameBaseState<GameFind>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // 🐻🐰🌟 Mascot PNG
                     Image.asset(mascot, height: 100),
                     const SizedBox(height: 12),
-
-                    Text(
-                      "🎉 Giỏi lắm bé ơi! 🎉",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.pink.shade700,
-                      ),
-                    ),
+                    Text("🎉 Giỏi lắm bé ơi! 🎉",
+                        style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.pink.shade700)),
                     const SizedBox(height: 12),
-
                     Text(
-                      "Bé đã hoàn thành $maxRound câu của Level $level!\n"
-                          "⭐ Sao nhận được: $starCount"
-                          "${crownCount > 0 ? "\n👑 Vương miện: $crownCount" : ""}",
+                      "Hoàn thành $maxRound câu!\n"
+                          "⭐ Chuỗi hiện tại: $streak\n"
+                          "🔥 Chuỗi dài nhất: $maxStreak\n"
+                          "👑 Tổng số câu đúng: $totalCorrect",
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
-                      ),
+                          fontSize: 18, fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(height: 20),
-
                     ElevatedButton.icon(
                       onPressed: () {
                         Navigator.pop(context);
@@ -261,6 +220,7 @@ class _GameFindState extends GameBaseState<GameFind>
                           level++;
                           round = 0;
                           streak = 0;
+                          maxStreak = 0;
                         });
                         _nextRound();
                       },
@@ -270,16 +230,13 @@ class _GameFindState extends GameBaseState<GameFind>
                         padding: const EdgeInsets.symmetric(
                             horizontal: 24, vertical: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
+                            borderRadius: BorderRadius.circular(20)),
                       ),
                       icon: const Icon(Icons.play_arrow),
-                      label: const Text(
-                        "Chơi Level mới",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    ),
+                      label: const Text("Chơi Level mới",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                    )
                   ],
                 ),
               ),
@@ -307,8 +264,8 @@ class _GameFindState extends GameBaseState<GameFind>
     round = 0;
     level = 1;
     streak = 0;
-    starCount = 0;
-    crownCount = 0;
+    maxStreak = 0;
+    totalCorrect = 0;
     _nextRound();
   }
 
@@ -320,200 +277,204 @@ class _GameFindState extends GameBaseState<GameFind>
 
     final progress = round / maxRound;
 
-    return Stack(
-      children: [
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: LinearProgressIndicator(
-                value: progress > 1 ? 1 : progress,
-                minHeight: 12,
-                borderRadius: BorderRadius.circular(12),
-                backgroundColor: Colors.grey.shade300,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  Colors.pinkAccent.shade200,
-                ),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Text(
-                  "Level $level - Câu $round/$maxRound",
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w500),
-                ),
-                Row(
-                  key: _starKey,
-                  children: [
-                    const Text("⭐ ",
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
-                    Text("$starCount  ",
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w500)),
-                    const Text("👑 ",
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
-                    Text("$crownCount",
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w500)),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            const Text(
-              "Hãy tìm chữ cái sau:",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 12),
-
-            ScaleTransition(
-              scale: _scaleAnimation,
-              child: Text(
-                targetLetter!.char,
-                style: const TextStyle(
-                  fontSize: 72,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.pink,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 3,
-                padding: const EdgeInsets.all(16),
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                children: options.map((letter) {
-                  final isSelected = selected == letter;
-                  final correctChoice = isSelected && isCorrect;
-                  final wrongChoice = isSelected && !isCorrect;
-
-                  return GestureDetector(
-                    onTap: selected == null ? () => _checkAnswer(letter) : null,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: correctChoice
-                              ? [Colors.green.shade400, Colors.green.shade200]
-                              : wrongChoice
-                              ? [Colors.red.shade400, Colors.red.shade200]
-                              : [Colors.blue.shade200, Colors.blue.shade50],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 4,
-                            offset: const Offset(2, 2),
-                          )
-                        ],
-                      ),
-                      child: Text(
-                        letter.char,
-                        style: const TextStyle(
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ],
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.pink.shade50, Colors.blue.shade50],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
         ),
-        Align(
-          alignment: Alignment.center,
-          child: ConfettiWidget(
-            confettiController: _confettiController,
-            blastDirectionality: BlastDirectionality.explosive,
-            shouldLoop: false,
-            numberOfParticles: 25,
-            maxBlastForce: 20,
-            minBlastForce: 8,
-            emissionFrequency: 0.1,
-          ),
-        ),
-      ],
-    );
-  }
-}
+      ),
+      child: Stack(
+        children: [
+          Column(
+            children: [
+              // 🌈 progress bar + ⭐ chạy bounce + glow
+              Padding(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final barWidth = constraints.maxWidth;
+                    const starSize = 28.0;
+                    final starX = (barWidth - starSize) * progress;
 
-class FlyingStar extends StatefulWidget {
-  final Offset start;
-  final Offset end;
-  final VoidCallback onComplete;
-
-  const FlyingStar(
-      {super.key, required this.start, required this.end, required this.onComplete});
-
-  @override
-  State<FlyingStar> createState() => _FlyingStarState();
-}
-
-class _FlyingStarState extends State<FlyingStar>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<Offset> _position;
-  late Animation<double> _scale;
-  late Animation<double> _opacity;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 900));
-
-    _position = Tween<Offset>(
-      begin: widget.start,
-      end: widget.end,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-
-    _scale = Tween<double>(begin: 1.2, end: 0.4).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-
-    _opacity = Tween<double>(begin: 1.0, end: 0.0).animate(_controller);
-
-    _controller.forward().whenComplete(widget.onComplete);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (_, __) {
-        return Positioned(
-          left: _position.value.dx,
-          top: _position.value.dy,
-          child: Opacity(
-            opacity: _opacity.value,
-            child: Transform.scale(
-              scale: _scale.value,
-              child: const Icon(
-                Icons.star,
-                size: 60,
-                color: Colors.yellow,
+                    return Stack(
+                      alignment: Alignment.centerLeft,
+                      children: [
+                        Container(
+                          height: 24,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                Colors.red,
+                                Colors.orange,
+                                Colors.yellow,
+                                Colors.green,
+                                Colors.blue,
+                                Colors.purple
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        Positioned(
+                          left: starX,
+                          child: AnimatedBuilder(
+                            animation: _controller,
+                            builder: (context, child) {
+                              final bounceY =
+                                  math.sin(_controller.value * 2 * math.pi) * 6;
+                              return Transform.translate(
+                                offset: Offset(0, bounceY),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.yellow.withOpacity(
+                                            0.6 +
+                                                0.4 *
+                                                    math.sin(_controller.value *
+                                                        2 *
+                                                        math.pi)),
+                                        blurRadius: 20,
+                                        spreadRadius: 4,
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(Icons.star,
+                                      color: Colors.white, size: starSize),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ),
+
+              // ⭐ streak, 🔥 max streak, 👑 total correct
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("⭐ ",
+                      style:
+                      TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text("$streak  ",
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w500)),
+                  const Text("🔥 ",
+                      style:
+                      TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text("$maxStreak  ",
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w500)),
+                  const Text("👑 ",
+                      style:
+                      TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text("$totalCorrect",
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w500)),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              const Text("Hãy tìm chữ cái sau:",
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 12),
+
+              // 🌟 chữ cái chính glow + bounce
+              ScaleTransition(
+                scale: _scaleAnimation,
+                child: Text(targetLetter!.char,
+                    style: TextStyle(
+                        fontSize: 90,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.pink.shade600,
+                        shadows: [
+                          Shadow(
+                              blurRadius: 20,
+                              color: Colors.pink.shade200,
+                              offset: Offset(0, 0))
+                        ])),
+              ),
+              const SizedBox(height: 12),
+
+              // 🔲 các lựa chọn
+              Expanded(
+                child: GridView.count(
+                  crossAxisCount: 3,
+                  padding: const EdgeInsets.all(16),
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  children: options.map((letter) {
+                    final isSelected = selected == letter;
+                    final correctChoice = isSelected && isCorrect;
+                    final wrongChoice = isSelected && !isCorrect;
+
+                    final gradient = correctChoice
+                        ? [Colors.green, Colors.lightGreenAccent]
+                        : wrongChoice
+                        ? [Colors.red, Colors.redAccent]
+                        : pastelColors[
+                    Random().nextInt(pastelColors.length)];
+
+                    return GestureDetector(
+                      onTap:
+                      selected == null ? () => _checkAnswer(letter) : null,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(colors: gradient),
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 4,
+                                offset: const Offset(2, 2))
+                          ],
+                        ),
+                        child: Text(letter.char,
+                            style: const TextStyle(
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white)),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+              // 🐻 mascot dưới
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Image.asset(
+                  mascots[Random().nextInt(mascots.length)],
+                  height: 80,
+                ),
+              ),
+            ],
+          ),
+
+          // 🎊 confetti hiệu ứng
+          Align(
+            alignment: Alignment.center,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirectionality: BlastDirectionality.explosive,
+              shouldLoop: false,
+              numberOfParticles: 25,
+              maxBlastForce: 20,
+              minBlastForce: 8,
+              emissionFrequency: 0.1,
             ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }
