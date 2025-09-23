@@ -10,6 +10,9 @@ import 'package:audioplayers/audioplayers.dart';
 import '../models/vn_letter.dart';
 import '../widgets/game_base.dart';
 
+// 🐻 trạng thái mascot
+enum MascotMood { idle, happy, sad, celebrate }
+
 class GameFind extends StatefulWidget {
   const GameFind({super.key});
 
@@ -40,12 +43,11 @@ class _GameFindState extends GameBaseState<GameFind>
   final int maxRound = 5;
   int level = 1;
 
-  int streak = 0;        // ⭐ chuỗi đúng liên tiếp hiện tại
-  int maxStreak = 0;     // 🔥 chuỗi dài nhất trong level
+  int streak = 0;        // ⭐ chuỗi hiện tại
+  int maxStreak = 0;     // 🔥 chuỗi dài nhất
   int totalCorrect = 0;  // 👑 tổng số câu đúng
 
-  final GlobalKey _starKey = GlobalKey();
-  OverlayEntry? _starOverlay;
+  MascotMood mascotMood = MascotMood.idle;
 
   final List<String> mascots = [
     "assets/images/mascot_1.png",
@@ -53,11 +55,6 @@ class _GameFindState extends GameBaseState<GameFind>
     "assets/images/mascot_3.png",
     "assets/images/mascot_4.png",
     "assets/images/mascot_5.png",
-    "assets/images/mascot_6.png",
-    "assets/images/mascot_7.png",
-    "assets/images/mascot_8.png",
-    "assets/images/mascot_9.png",
-    "assets/images/mascot_10.png",
   ];
 
   final pastelColors = [
@@ -123,6 +120,7 @@ class _GameFindState extends GameBaseState<GameFind>
       options = newOptions;
       selected = null;
       isCorrect = false;
+      mascotMood = MascotMood.idle;
     });
   }
 
@@ -142,18 +140,17 @@ class _GameFindState extends GameBaseState<GameFind>
       await onAnswer(true);
 
       setState(() {
-        totalCorrect++;   // 👑 tổng số câu đúng
-        streak++;         // ⭐ chuỗi hiện tại
-        if (streak > maxStreak) {
-          maxStreak = streak; // 🔥 cập nhật kỷ lục chuỗi
-        }
+        totalCorrect++;
+        streak++;
+        if (streak > maxStreak) maxStreak = streak;
+        mascotMood = MascotMood.happy;
       });
     } else {
       _playSound("wrong.mp3");
       await onAnswer(false);
-
       setState(() {
-        streak = 0; // ❌ sai thì reset chuỗi hiện tại
+        streak = 0;
+        mascotMood = MascotMood.sad;
       });
     }
 
@@ -162,6 +159,8 @@ class _GameFindState extends GameBaseState<GameFind>
   }
 
   void _showLevelComplete() {
+    setState(() => mascotMood = MascotMood.celebrate);
+
     final mascot = mascots[Random().nextInt(mascots.length)];
 
     showDialog(
@@ -221,6 +220,7 @@ class _GameFindState extends GameBaseState<GameFind>
                           round = 0;
                           streak = 0;
                           maxStreak = 0;
+                          mascotMood = MascotMood.idle;
                         });
                         _nextRound();
                       },
@@ -266,7 +266,98 @@ class _GameFindState extends GameBaseState<GameFind>
     streak = 0;
     maxStreak = 0;
     totalCorrect = 0;
+    mascotMood = MascotMood.idle;
     _nextRound();
+  }
+
+  // 🎭 mascot động
+  Widget _buildMascot() {
+    String mascotImg = mascots[Random().nextInt(mascots.length)];
+    Widget mascotWidget = Image.asset(mascotImg, height: 120);
+
+    switch (mascotMood) {
+      case MascotMood.happy:
+        return Column(
+          children: [
+            _floatingHearts(),
+            ScaleTransition(
+              scale: Tween<double>(begin: 0.9, end: 1.1).animate(
+                CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+              ),
+              child: mascotWidget,
+            ),
+          ],
+        );
+      case MascotMood.sad:
+        return Column(
+          children: [
+            const Icon(Icons.cloud, color: Colors.grey, size: 30),
+            Opacity(opacity: 0.7, child: mascotWidget),
+          ],
+        );
+      case MascotMood.celebrate:
+        return Column(
+          children: [
+            _floatingStars(),
+            RotationTransition(
+              turns: Tween<double>(begin: -0.05, end: 0.05).animate(
+                CurvedAnimation(parent: _controller, curve: Curves.elasticInOut),
+              ),
+              child: mascotWidget,
+            ),
+            const Text("🎉 Yeah! 🎉",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          ],
+        );
+      default:
+        return mascotWidget;
+    }
+  }
+
+  Widget _floatingHearts() {
+    return SizedBox(
+      height: 40,
+      child: Stack(
+        alignment: Alignment.center,
+        children: List.generate(3, (i) {
+          final dx = (i - 1) * 40.0;
+          return AnimatedBuilder(
+            animation: _controller,
+            builder: (_, __) {
+              final offsetY = math.sin(_controller.value * 2 * math.pi + i) * 8;
+              return Transform.translate(
+                offset: Offset(dx, offsetY),
+                child: const Icon(Icons.favorite,
+                    color: Colors.pinkAccent, size: 18),
+              );
+            },
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _floatingStars() {
+    return SizedBox(
+      height: 40,
+      child: Stack(
+        alignment: Alignment.center,
+        children: List.generate(3, (i) {
+          final dx = (i - 1) * 40.0;
+          return AnimatedBuilder(
+            animation: _controller,
+            builder: (_, __) {
+              final offsetY = math.cos(_controller.value * 2 * math.pi + i) * 8;
+              return Transform.translate(
+                offset: Offset(dx, offsetY),
+                child:
+                const Icon(Icons.star, color: Colors.yellow, size: 20),
+              );
+            },
+          );
+        }),
+      ),
+    );
   }
 
   @override
@@ -452,10 +543,7 @@ class _GameFindState extends GameBaseState<GameFind>
               // 🐻 mascot dưới
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
-                child: Image.asset(
-                  mascots[Random().nextInt(mascots.length)],
-                  height: 80,
-                ),
+                child: _buildMascot(),
               ),
             ],
           ),
