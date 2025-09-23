@@ -1,32 +1,23 @@
 import 'package:flutter/material.dart';
-import '../services/progress_service.dart';
 
+/// Lớp cơ sở cho các game
 abstract class GameBaseState<T extends StatefulWidget> extends State<T> {
+  /// ID game (ví dụ: "game1")
   String get gameId;
+
+  /// Tiêu đề game (hiển thị trên AppBar)
   String get title;
 
-  int score = 0;
-  int round = 0;
-  int combo = 0;
-
-  Future<void> onAnswer(bool isCorrect) async {
-    setState(() {
-      round++;
-      if (isCorrect) {
-        score++;
-        combo++;
-      } else {
-        combo = 0;
-      }
-    });
-
-    // Lưu tiến độ
-    await ProgressService.saveProgress(gameId, score, round);
+  /// Khi trả lời (đúng hoặc sai)
+  /// - Không tăng round ở đây nữa (để game con tự xử lý)
+  Future<void> onAnswer(bool correct) async {
+    // Có thể ghi log, lưu tiến trình, gửi analytics... tại đây
   }
 
-  void onReset(); // từng game override
+  /// Reset lại trạng thái game (override ở game con)
+  void onReset();
 
-  /// Nội dung riêng của game
+  /// UI của game (override ở game con)
   Widget buildGame(BuildContext context);
 
   @override
@@ -34,35 +25,14 @@ abstract class GameBaseState<T extends StatefulWidget> extends State<T> {
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
-        backgroundColor: Colors.pinkAccent,
         actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Center(
-              child: Text(
-                "⭐ $score/$round\n🔥 $combo",
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            tooltip: "Chơi lại",
             onPressed: onReset,
           ),
         ],
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFB3E5FC), Color(0xFFF8BBD0)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: buildGame(context),
-      ),
+      body: buildGame(context),
     );
   }
 }
