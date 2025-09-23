@@ -46,6 +46,19 @@ class _GameFindState extends GameBaseState<GameFind>
   final GlobalKey _starKey = GlobalKey();
   OverlayEntry? _starOverlay;
 
+  final List<String> mascots = [
+    "assets/images/mascot_1.png",
+    "assets/images/mascot_2.png",
+    "assets/images/mascot_3.png",
+    "assets/images/mascot_4.png",
+    "assets/images/mascot_5.png",
+    "assets/images/mascot_6.png",
+    "assets/images/mascot_7.png",
+    "assets/images/mascot_8.png",
+    "assets/images/mascot_9.png",
+    "assets/images/mascot_10.png",
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -134,7 +147,6 @@ class _GameFindState extends GameBaseState<GameFind>
     } else {
       _playSound("wrong.mp3");
       await onAnswer(false);
-
       setState(() {
         streak = 0;
       });
@@ -164,7 +176,6 @@ class _GameFindState extends GameBaseState<GameFind>
         end: starTargetPos,
         onComplete: () {
           setState(() {
-            // 👑 đủ 5 sao thì +1 vương miện
             if (starCount % 5 == 0) {
               crownCount++;
               _playSound("crown.mp3");
@@ -181,33 +192,111 @@ class _GameFindState extends GameBaseState<GameFind>
   }
 
   void _showLevelComplete() {
-    String msg =
-        "Bạn đã hoàn thành $maxRound câu của Level $level!\n⭐ Sao đạt được: $starCount";
-    if (crownCount > 0) {
-      msg += "\n👑 Vương miện: $crownCount";
-    }
+    final mascot = mascots[Random().nextInt(mascots.length)];
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: const Text("🎉 Hoàn thành level!"),
-        content: Text(msg),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                level++;
-                round = 0;
-                streak = 0;
-              });
-              _nextRound();
-            },
-            child: const Text("Tiếp tục Level mới"),
+      builder: (_) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
           ),
-        ],
-      ),
+          backgroundColor: Colors.transparent,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.pink.shade100, Colors.yellow.shade100],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.pink.withOpacity(0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
+                    )
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // 🐻🐰🌟 Mascot PNG
+                    Image.asset(mascot, height: 100),
+                    const SizedBox(height: 12),
+
+                    Text(
+                      "🎉 Giỏi lắm bé ơi! 🎉",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.pink.shade700,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    Text(
+                      "Bé đã hoàn thành $maxRound câu của Level $level!\n"
+                          "⭐ Sao nhận được: $starCount"
+                          "${crownCount > 0 ? "\n👑 Vương miện: $crownCount" : ""}",
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        setState(() {
+                          level++;
+                          round = 0;
+                          streak = 0;
+                        });
+                        _nextRound();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.pinkAccent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      icon: const Icon(Icons.play_arrow),
+                      label: const Text(
+                        "Chơi Level mới",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Positioned.fill(
+                child: ConfettiWidget(
+                  confettiController: _confettiController,
+                  blastDirectionality: BlastDirectionality.explosive,
+                  numberOfParticles: 20,
+                  maxBlastForce: 12,
+                  minBlastForce: 5,
+                  emissionFrequency: 0.05,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -235,7 +324,6 @@ class _GameFindState extends GameBaseState<GameFind>
       children: [
         Column(
           children: [
-            // Progress bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: LinearProgressIndicator(
@@ -382,8 +470,8 @@ class _FlyingStarState extends State<FlyingStar>
   @override
   void initState() {
     super.initState();
-    _controller =
-        AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 900));
 
     _position = Tween<Offset>(
       begin: widget.start,
