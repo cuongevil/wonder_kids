@@ -56,3 +56,5 @@ flutter:
     - assets/images/cloud.png
     - assets/audio/star.mp3
     - assets/audio/crown.mp3
+    - assets/audio/voice_correct.mp3
+    - assets/audio/voice_wrong.mp3

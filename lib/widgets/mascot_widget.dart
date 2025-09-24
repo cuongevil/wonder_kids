@@ -1,11 +1,14 @@
-import 'dart:math' as math;
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/audio_service.dart';
+import '../models/mascot_mood.dart';
 
 class MascotWidget extends StatefulWidget {
-  const MascotWidget({super.key});
+  final MascotMood mood;
+
+  const MascotWidget({super.key, this.mood = MascotMood.idle});
 
   @override
   State<MascotWidget> createState() => _MascotWidgetState();
@@ -16,20 +19,15 @@ class _MascotWidgetState extends State<MascotWidget>
   late AnimationController _bounceController;
   late AnimationController _orbitController;
   late AnimationController _glowController;
+  late AnimationController _rotateController;
+  late Animation<double> _scaleAnimation;
 
-  // Biểu cảm khác nhau
   final List<String> _expressions = [
     "assets/images/mascot.png",
     "assets/images/mascot_1.png",
     "assets/images/mascot_2.png",
     "assets/images/mascot_3.png",
     "assets/images/mascot_4.png",
-    "assets/images/mascot_5.png",
-    "assets/images/mascot_6.png",
-    "assets/images/mascot_7.png",
-    "assets/images/mascot_8.png",
-    "assets/images/mascot_9.png",
-    "assets/images/mascot_10.png",
   ];
   late String _currentExpression;
   Timer? _expressionTimer;
@@ -37,10 +35,8 @@ class _MascotWidgetState extends State<MascotWidget>
   @override
   void initState() {
     super.initState();
-
     _currentExpression = _expressions.first;
 
-    // Animation controllers
     _bounceController =
     AnimationController(vsync: this, duration: const Duration(seconds: 3))
       ..repeat();
@@ -53,11 +49,17 @@ class _MascotWidgetState extends State<MascotWidget>
     AnimationController(vsync: this, duration: const Duration(seconds: 4))
       ..repeat(reverse: true);
 
-    // Random thay đổi biểu cảm 5s/lần
+    _rotateController =
+    AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))
+      ..repeat();
+
+    _scaleAnimation = Tween<double>(begin: 0.9, end: 1.1).animate(
+      CurvedAnimation(parent: _bounceController, curve: Curves.easeInOut),
+    );
+
     _expressionTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       setState(() {
-        _currentExpression =
-            (_expressions..shuffle()).first; // chọn ngẫu nhiên
+        _currentExpression = (_expressions..shuffle()).first;
       });
     });
   }
@@ -67,25 +69,134 @@ class _MascotWidgetState extends State<MascotWidget>
     _bounceController.dispose();
     _orbitController.dispose();
     _glowController.dispose();
+    _rotateController.dispose();
     _expressionTimer?.cancel();
     super.dispose();
   }
 
+  /// 🌈 chọn màu gradient theo trạng thái
+  List<Color> _getMoodColors() {
+    switch (widget.mood) {
+      case MascotMood.happy:
+        return [Colors.greenAccent.withOpacity(0.6), Colors.blueAccent.withOpacity(0.3)];
+      case MascotMood.sad:
+        return [Colors.grey.withOpacity(0.6), Colors.blueGrey.withOpacity(0.3)];
+      case MascotMood.celebrate:
+        return [
+          Colors.redAccent.withOpacity(0.6),
+          Colors.orangeAccent.withOpacity(0.6),
+          Colors.yellowAccent.withOpacity(0.6),
+          Colors.greenAccent.withOpacity(0.6),
+          Colors.blueAccent.withOpacity(0.6),
+          Colors.purpleAccent.withOpacity(0.6),
+        ];
+      default:
+        return [Colors.yellow.withOpacity(0.6), Colors.pink.withOpacity(0.3)];
+    }
+  }
+
+  Widget _floatingHearts() {
+    return SizedBox(
+      height: 40,
+      child: Stack(
+        alignment: Alignment.center,
+        children: List.generate(3, (i) {
+          final dx = (i - 1) * 40.0;
+          return AnimatedBuilder(
+            animation: _bounceController,
+            builder: (_, __) {
+              final offsetY =
+                  math.sin(_bounceController.value * 2 * math.pi + i) * 8;
+              return Transform.translate(
+                offset: Offset(dx, offsetY),
+                child: const Icon(Icons.favorite,
+                    color: Colors.pinkAccent, size: 18),
+              );
+            },
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _floatingStars() {
+    return SizedBox(
+      height: 40,
+      child: Stack(
+        alignment: Alignment.center,
+        children: List.generate(3, (i) {
+          final dx = (i - 1) * 40.0;
+          return AnimatedBuilder(
+            animation: _bounceController,
+            builder: (_, __) {
+              final offsetY =
+                  math.cos(_bounceController.value * 2 * math.pi + i) * 8;
+              return Transform.translate(
+                offset: Offset(dx, offsetY),
+                child: const Icon(Icons.star, color: Colors.yellow, size: 20),
+              );
+            },
+          );
+        }),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    Widget mascotImg = AnimatedBuilder(
+      animation: _bounceController,
+      builder: (context, child) {
+        final offset =
+            math.sin(_bounceController.value * 2 * math.pi) * 8; // nhảy
+        return Transform.translate(offset: Offset(0, offset), child: child);
+      },
+      child: Image.asset(_currentExpression, height: 120),
+    );
+
+    switch (widget.mood) {
+      case MascotMood.happy:
+        mascotImg = Column(children: [
+          _floatingHearts(),
+          ScaleTransition(scale: _scaleAnimation, child: mascotImg),
+        ]);
+        break;
+      case MascotMood.sad:
+        mascotImg = Column(children: [
+          const Icon(Icons.cloud, color: Colors.grey, size: 30),
+          Opacity(opacity: 0.6, child: mascotImg),
+        ]);
+        break;
+      case MascotMood.celebrate:
+        mascotImg = Column(children: [
+          _floatingStars(),
+          RotationTransition(
+            turns: Tween<double>(begin: -0.05, end: 0.05).animate(
+              CurvedAnimation(
+                parent: _rotateController,
+                curve: Curves.elasticInOut,
+              ),
+            ),
+            child: mascotImg,
+          ),
+        ]);
+        break;
+      default:
+        break;
+    }
+
     return Hero(
       tag: "mascot",
       child: GestureDetector(
         onTap: () {
-          // Khi bé tap → mascot nhảy + phát tiếng cười
           HapticFeedback.lightImpact();
-          AudioService.play("audio/correct.mp3"); // thay bằng audio cười vui
+          AudioService.play("correct.mp3");
           _bounceController.forward(from: 0.0);
         },
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // Glow gradient
+            // 🌈 Glow đổi màu theo mood
             AnimatedBuilder(
               animation: _glowController,
               builder: (context, child) {
@@ -98,59 +209,15 @@ class _MascotWidgetState extends State<MascotWidget>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
-                        colors: [
-                          Colors.yellow.withOpacity(0.6),
-                          Colors.pink.withOpacity(0.2),
-                          Colors.transparent
-                        ],
-                        stops: const [0.3, 0.6, 1],
+                        colors: _getMoodColors(),
+                        stops: const [0.2, 0.8],
                       ),
                     ),
                   ),
                 );
               },
             ),
-
-            // Mascot chính
-            AnimatedBuilder(
-              animation: _bounceController,
-              builder: (context, child) {
-                final offset =
-                    math.sin(_bounceController.value * 2 * math.pi) * 8;
-                return Transform.translate(
-                  offset: Offset(0, offset),
-                  child: child,
-                );
-              },
-              child: Image.asset(_currentExpression, height: 120),
-            ),
-
-            // Các icon nhỏ bay quanh
-            ...List.generate(5, (i) {
-              return AnimatedBuilder(
-                animation: _orbitController,
-                builder: (context, child) {
-                  final angle = _orbitController.value * 2 * math.pi +
-                      (i * 2 * math.pi / 5);
-                  final radius = 80.0;
-                  final dx = math.cos(angle) * radius;
-                  final dy = math.sin(angle) * radius;
-
-                  return Positioned(
-                    left: 60 + dx,
-                    top: 60 + dy,
-                    child: Opacity(
-                      opacity: 0.7,
-                      child: Icon(
-                        i.isEven ? Icons.star : Icons.favorite,
-                        color: i.isEven ? Colors.yellow : Colors.pinkAccent,
-                        size: 18,
-                      ),
-                    ),
-                  );
-                },
-              );
-            }),
+            mascotImg,
           ],
         ),
       ),

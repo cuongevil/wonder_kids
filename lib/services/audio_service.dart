@@ -3,8 +3,23 @@ import 'package:audioplayers/audioplayers.dart';
 class AudioService {
   static final AudioPlayer _player = AudioPlayer();
 
-  static Future<void> play(String path) async {
-    await _player.stop();
-    await _player.play(AssetSource(path));
+  /// Phát file audio từ assets/audio/
+  static Future<void> play(String file) async {
+    try {
+      await _player.stop();
+      await _player.play(AssetSource("audio/$file"));
+    } catch (_) {}
+  }
+
+  static Future<void> stop() async {
+    try {
+      await _player.stop();
+    } catch (_) {}
+  }
+
+  static Future<void> dispose() async {
+    try {
+      await _player.dispose();
+    } catch (_) {}
   }
 }
