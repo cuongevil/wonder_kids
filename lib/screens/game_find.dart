@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:math' as math;
+
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +14,7 @@ import '../widgets/score_board.dart';
 import '../widgets/rainbow_progress.dart';
 import '../widgets/confetti_overlay.dart';
 import '../widgets/level_complete_dialog.dart';
+import '../widgets/options_grid.dart';
 import '../services/audio_service.dart';
 
 class GameFind extends StatefulWidget {
@@ -49,28 +52,22 @@ class _GameFindState extends GameBaseState<GameFind>
 
   MascotMood mascotMood = MascotMood.idle;
 
-  final pastelColors = [
-    [Colors.pinkAccent, Colors.pink.shade100],
-    [Colors.lightBlueAccent, Colors.blue.shade100],
-    [Colors.lightGreen, Colors.green.shade100],
-    [Colors.orangeAccent, Colors.orange.shade100],
-    [Colors.purpleAccent, Colors.purple.shade100],
-  ];
-
   @override
   void initState() {
     super.initState();
     _loadLetters();
 
-    _controller =
-    AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))
-      ..repeat();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    )..repeat();
 
     _scaleAnimation = Tween<double>(begin: 0.9, end: 1.1).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
 
-    _confettiController = ConfettiController(duration: const Duration(seconds: 2));
+    _confettiController =
+        ConfettiController(duration: const Duration(seconds: 2));
   }
 
   @override
@@ -203,7 +200,12 @@ class _GameFindState extends GameBaseState<GameFind>
           Column(
             children: [
               RainbowProgress(progress: progress, controller: _controller),
-              ScoreBoard(streak: streak, maxStreak: maxStreak, totalCorrect: totalCorrect),
+
+              ScoreBoard(
+                streak: streak,
+                maxStreak: maxStreak,
+                totalCorrect: totalCorrect,
+              ),
               const SizedBox(height: 12),
 
               const Text("Hãy tìm chữ cái sau:",
@@ -227,54 +229,23 @@ class _GameFindState extends GameBaseState<GameFind>
               const SizedBox(height: 12),
 
               Expanded(
-                child: GridView.count(
-                  crossAxisCount: 3,
-                  padding: const EdgeInsets.all(16),
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  children: options.map((letter) {
-                    final isSelected = selected == letter;
-                    final correctChoice = isSelected && isCorrect;
-                    final wrongChoice = isSelected && !isCorrect;
-
-                    final gradient = correctChoice
-                        ? [Colors.green, Colors.lightGreenAccent]
-                        : wrongChoice
-                        ? [Colors.red, Colors.redAccent]
-                        : pastelColors[Random().nextInt(pastelColors.length)];
-
-                    return GestureDetector(
-                      onTap:
-                      selected == null ? () => _checkAnswer(letter) : null,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: gradient),
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 4,
-                                offset: const Offset(2, 2))
-                          ],
-                        ),
-                        child: Text(letter.char,
-                            style: const TextStyle(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white)),
-                      ),
-                    );
-                  }).toList(),
+                child: OptionsGrid(
+                  options: options,
+                  selected: selected,
+                  isCorrect: isCorrect,
+                  onTap: _checkAnswer,
                 ),
               ),
 
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: MascotWidget(mood: mascotMood),
-              ),
+              const SizedBox(height: 120),
             ],
+          ),
+
+          Positioned(
+            bottom: 16,
+            left: 0,
+            right: 0,
+            child: Center(child: MascotWidget(mood: mascotMood)),
           ),
 
           ConfettiOverlay(controller: _confettiController),

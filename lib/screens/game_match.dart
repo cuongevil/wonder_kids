@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +11,8 @@ import '../widgets/score_board.dart';
 import '../widgets/rainbow_progress.dart';
 import '../widgets/confetti_overlay.dart';
 import '../widgets/level_complete_dialog.dart';
+import '../widgets/letter_column.dart';
+import '../widgets/image_column.dart';
 import '../services/audio_service.dart';
 
 class GameMatch extends StatefulWidget {
@@ -34,17 +35,13 @@ class _GameMatchState extends GameBaseState<GameMatch>
 
   VnLetter? selectedLetter;
   VnLetter? selectedImage;
-
-  // chỉ highlight 2 thẻ sai vừa chọn
   VnLetter? wrongLeft;
   VnLetter? wrongRight;
 
-  // rounds
-  int round = 0;          // số vòng đã HOÀN THÀNH
+  int round = 0;
   int maxRound = 5;
   int level = 1;
 
-  // score
   int streak = 0;
   int maxStreak = 0;
   int totalCorrect = 0;
@@ -53,8 +50,6 @@ class _GameMatchState extends GameBaseState<GameMatch>
 
   late AnimationController _progressController;
   late ConfettiController _confettiController;
-
-  // để tính progress trong vòng
   int _pairsAtRoundStart = 0;
 
   @override
@@ -89,13 +84,11 @@ class _GameMatchState extends GameBaseState<GameMatch>
   }
 
   void _nextRound() {
-    // Nếu đã hoàn thành đủ vòng → hiển thị tổng kết
     if (round >= maxRound) {
       _showLevelComplete();
       return;
     }
 
-    // chọn data cho vòng mới
     final chosen = [...letters]..shuffle();
     final optionCount = (level * 2 + 2).clamp(4, 8);
     final selected = chosen.take(optionCount).toList();
@@ -105,7 +98,6 @@ class _GameMatchState extends GameBaseState<GameMatch>
 
     _pairsAtRoundStart = pairs.length;
 
-    // reset chọn/đánh dấu
     selectedLetter = null;
     selectedImage = null;
     wrongLeft = null;
@@ -118,7 +110,7 @@ class _GameMatchState extends GameBaseState<GameMatch>
   void _onTapLetter(VnLetter l) {
     setState(() {
       selectedLetter = l;
-      wrongLeft = null; // clear đỏ cũ bên trái
+      wrongLeft = null;
     });
     _checkMatch();
   }
@@ -126,7 +118,7 @@ class _GameMatchState extends GameBaseState<GameMatch>
   void _onTapImage(VnLetter l) {
     setState(() {
       selectedImage = l;
-      wrongRight = null; // clear đỏ cũ bên phải
+      wrongRight = null;
     });
     _checkMatch();
   }
@@ -147,22 +139,19 @@ class _GameMatchState extends GameBaseState<GameMatch>
         totalCorrect++;
         if (streak > maxStreak) maxStreak = streak;
         mascotMood = MascotMood.happy;
-
-        // clear select/wrong
         selectedLetter = null;
         selectedImage = null;
         wrongLeft = null;
         wrongRight = null;
       });
 
-      // nếu đã ghép hết trong vòng → chuyển vòng SAU một nhịp
       if (pairs.isEmpty) {
         Future.delayed(const Duration(milliseconds: 600), () {
           if (!mounted) return;
           setState(() {
-            round++; // ✅ tăng số vòng đã hoàn thành TẠI ĐÂY
+            round++;
           });
-          _nextRound(); // rồi mới setup vòng mới
+          _nextRound();
         });
       }
     } else {
@@ -170,17 +159,12 @@ class _GameMatchState extends GameBaseState<GameMatch>
       setState(() {
         streak = 0;
         mascotMood = MascotMood.sad;
-
-        // chỉ đỏ đúng 2 thẻ vừa chọn
         wrongLeft = selectedLetter;
         wrongRight = selectedImage;
-
-        // clear chọn để bé chọn lại
         selectedLetter = null;
         selectedImage = null;
       });
 
-      // tự xóa highlight đỏ sau 600ms
       Future.delayed(const Duration(milliseconds: 600), () {
         if (!mounted) return;
         setState(() {
@@ -211,7 +195,7 @@ class _GameMatchState extends GameBaseState<GameMatch>
             maxStreak = 0;
             mascotMood = MascotMood.idle;
           });
-          _nextRound();
+          Future.delayed(const Duration(milliseconds: 200), _nextRound);
         },
       ),
     );
@@ -232,7 +216,6 @@ class _GameMatchState extends GameBaseState<GameMatch>
     _loadLetters();
   }
 
-  // ✅ progress tổng = (vòng đã hoàn thành + tiến độ trong vòng) / maxRound
   double _overallProgress() {
     if (maxRound <= 0) return 0;
     final perRound = (_pairsAtRoundStart == 0)
@@ -244,7 +227,6 @@ class _GameMatchState extends GameBaseState<GameMatch>
 
   @override
   Widget buildGame(BuildContext context) {
-    // Vừa ghép xong và đang chuyển vòng → vẫn render progress + nền
     final progress = _overallProgress();
 
     return Container(
@@ -259,21 +241,16 @@ class _GameMatchState extends GameBaseState<GameMatch>
         children: [
           Column(
             children: [
-              // 🌈 progress bar chạy mượt
               RainbowProgress(progress: progress, controller: _progressController),
-
               ScoreBoard(
                 streak: streak,
                 maxStreak: maxStreak,
                 totalCorrect: totalCorrect,
               ),
               const SizedBox(height: 12),
-
               const Text("Ghép chữ với hình tương ứng",
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
-
-              // Nếu chưa có cặp (đang chuyển vòng) → loader nhỏ
               if (pairs.isEmpty)
                 const Padding(
                   padding: EdgeInsets.only(top: 40),
@@ -283,99 +260,43 @@ class _GameMatchState extends GameBaseState<GameMatch>
                 Expanded(
                   child: Row(
                     children: [
-                      // Cột chữ
                       Expanded(
-                        child: ListView(
-                          padding: const EdgeInsets.all(16),
-                          children: pairs.map((p) {
-                            final isSelected = selectedLetter == p.letter;
-                            final isWrong = wrongLeft == p.letter;
-
-                            Color bg = Colors.white;
-                            if (isWrong) {
-                              bg = Colors.red.shade200;
-                            } else if (isSelected) {
-                              bg = Colors.blue.shade200;
-                            }
-
-                            return GestureDetector(
-                              onTap: () => _onTapLetter(p.letter),
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(vertical: 8),
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: bg,
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Colors.black26,
-                                      blurRadius: 4,
-                                      offset: Offset(2, 2),
-                                    )
-                                  ],
-                                ),
-                                child: Text(
-                                  p.letter.char,
-                                  style: const TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            );
-                          }).toList(),
+                        child: LetterColumn(
+                          items: pairs
+                              .map((p) => LetterItem(
+                            letter: p.letter,
+                            isSelected: selectedLetter == p.letter,
+                            isWrong: wrongLeft == p.letter,
+                          ))
+                              .toList(),
+                          onTap: _onTapLetter,
                         ),
                       ),
-
-                      // Cột hình
                       Expanded(
-                        child: ListView(
-                          padding: const EdgeInsets.all(16),
-                          children: pairs.map((p) {
-                            final isSelected = selectedImage == p.letter;
-                            final isWrong = wrongRight == p.letter;
-
-                            Color bg = Colors.white;
-                            if (isWrong) {
-                              bg = Colors.red.shade200;
-                            } else if (isSelected) {
-                              bg = Colors.green.shade200;
-                            }
-
-                            return GestureDetector(
-                              onTap: () => _onTapImage(p.letter),
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(vertical: 8),
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: bg,
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Colors.black26,
-                                      blurRadius: 4,
-                                      offset: Offset(2, 2),
-                                    )
-                                  ],
-                                ),
-                                child: p.image != null
-                                    ? Image.asset(p.image!, height: 60)
-                                    : const Icon(Icons.image, size: 40),
-                              ),
-                            );
-                          }).toList(),
+                        child: ImageColumn(
+                          items: pairs
+                              .map((p) => ImageItem(
+                            letter: p.letter,
+                            image: p.image,
+                            isSelected: selectedImage == p.letter,
+                            isWrong: wrongRight == p.letter,
+                          ))
+                              .toList(),
+                          onTap: _onTapImage,
                         ),
                       ),
                     ],
                   ),
                 ),
-
-              const SizedBox(height: 80),
-              MascotWidget(mood: mascotMood),
+              const SizedBox(height: 120),
             ],
           ),
-
+          Positioned(
+            bottom: 16,
+            left: 0,
+            right: 0,
+            child: Center(child: MascotWidget(mood: mascotMood)),
+          ),
           ConfettiOverlay(controller: _confettiController),
         ],
       ),
