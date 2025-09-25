@@ -1,31 +1,234 @@
 [
-  {"key": "A",       "char": "A", "word": "Áo"},
-  {"key": "A_breve", "char": "Ă", "word": "Ăn"},
-  {"key": "A_circ",  "char": "Â", "word": "Ấm"},
-  {"key": "B", "char": "B", "word": "Bé"},
-  {"key": "C", "char": "C", "word": "Cá"},
-  {"key": "D", "char": "D", "word": "Dê"},
-  {"key": "D_cross", "char": "Đ", "word": "Đèn"},
-  {"key": "E", "char": "E", "word": "Em"},
-  {"key": "E_circ", "char": "Ê", "word": "Êm"},
-  {"key": "G", "char": "G", "word": "Gà"},
-  {"key": "H", "char": "H", "word": "Hoa"},
-  {"key": "I", "char": "I", "word": "Ích"},
-  {"key": "K", "char": "K", "word": "Kẹo"},
-  {"key": "L", "char": "L", "word": "Lá"},
-  {"key": "M", "char": "M", "word": "Mẹ"},
-  {"key": "N", "char": "N", "word": "Nơ"},
-  {"key": "O", "char": "O", "word": "Ong"},
-  {"key": "O_circ", "char": "Ô", "word": "Ô tô"},
-  {"key": "O_horn", "char": "Ơ", "word": "ơi"},
-  {"key": "P", "char": "P", "word": "Phở"},
-  {"key": "Q", "char": "Q", "word": "Quả"},
-  {"key": "R", "char": "R", "word": "Rùa"},
-  {"key": "S", "char": "S", "word": "Sao"},
-  {"key": "T", "char": "T", "word": "Tôm"},
-  {"key": "U", "char": "U", "word": "Út"},
-  {"key": "U_horn", "char": "Ư", "word": "Ước"},
-  {"key": "V", "char": "V", "word": "Voi"},
-  {"key": "X", "char": "X", "word": "Xoài"},
-  {"key": "Y", "char": "Y", "word": "Yêu"}
+  {
+    "key": "A",
+    "char": "A",
+    "word": "Áo",
+    "imagePath": "assets/images/letters/A.png",
+    "gameImagePath": "assets/images/game/A.png",
+    "audioPath": "assets/audio/letters/A.mp3"
+  },
+  {
+    "key": "A_breve",
+    "char": "Ă",
+    "word": "Ăn",
+    "imagePath": "assets/images/letters/A_breve.png",
+    "gameImagePath": "assets/images/game/A_breve.png",
+    "audioPath": "assets/audio/letters/A_breve.mp3"
+  },
+  {
+    "key": "A_circ",
+    "char": "Â",
+    "word": "Ấm",
+    "imagePath": "assets/images/letters/A_circ.png",
+    "gameImagePath": "assets/images/game/A_circ.png",
+    "audioPath": "assets/audio/letters/A_circ.mp3"
+  },
+  {
+    "key": "B",
+    "char": "B",
+    "word": "Bé",
+    "imagePath": "assets/images/letters/B.png",
+    "gameImagePath": "assets/images/game/B.png",
+    "audioPath": "assets/audio/letters/B.mp3"
+  },
+  {
+    "key": "C",
+    "char": "C",
+    "word": "Cá",
+    "imagePath": "assets/images/letters/C.png",
+    "gameImagePath": "assets/images/game/C.png",
+    "audioPath": "assets/audio/letters/C.mp3"
+  },
+  {
+    "key": "D",
+    "char": "D",
+    "word": "Dê",
+    "imagePath": "assets/images/letters/D.png",
+    "gameImagePath": "assets/images/game/D.png",
+    "audioPath": "assets/audio/letters/D.mp3"
+  },
+  {
+    "key": "D_cross",
+    "char": "Đ",
+    "word": "Đèn",
+    "imagePath": "assets/images/letters/D_cross.png",
+    "gameImagePath": "assets/images/game/D_cross.png",
+    "audioPath": "assets/audio/letters/D_cross.mp3"
+  },
+  {
+    "key": "E",
+    "char": "E",
+    "word": "Em",
+    "imagePath": "assets/images/letters/E.png",
+    "gameImagePath": "assets/images/game/E.png",
+    "audioPath": "assets/audio/letters/E.mp3"
+  },
+  {
+    "key": "E_circ",
+    "char": "Ê",
+    "word": "Êm",
+    "imagePath": "assets/images/letters/E_circ.png",
+    "gameImagePath": "assets/images/game/E_circ.png",
+    "audioPath": "assets/audio/letters/E_circ.mp3"
+  },
+  {
+    "key": "G",
+    "char": "G",
+    "word": "Gà",
+    "imagePath": "assets/images/letters/G.png",
+    "gameImagePath": "assets/images/game/G.png",
+    "audioPath": "assets/audio/letters/G.mp3"
+  },
+  {
+    "key": "H",
+    "char": "H",
+    "word": "Hoa",
+    "imagePath": "assets/images/letters/H.png",
+    "gameImagePath": "assets/images/game/H.png",
+    "audioPath": "assets/audio/letters/H.mp3"
+  },
+  {
+    "key": "I",
+    "char": "I",
+    "word": "Ích",
+    "imagePath": "assets/images/letters/I.png",
+    "gameImagePath": "assets/images/game/I.png",
+    "audioPath": "assets/audio/letters/I.mp3"
+  },
+  {
+    "key": "K",
+    "char": "K",
+    "word": "Kẹo",
+    "imagePath": "assets/images/letters/K.png",
+    "gameImagePath": "assets/images/game/K.png",
+    "audioPath": "assets/audio/letters/K.mp3"
+  },
+  {
+    "key": "L",
+    "char": "L",
+    "word": "Lá",
+    "imagePath": "assets/images/letters/L.png",
+    "gameImagePath": "assets/images/game/L.png",
+    "audioPath": "assets/audio/letters/L.mp3"
+  },
+  {
+    "key": "M",
+    "char": "M",
+    "word": "Mẹ",
+    "imagePath": "assets/images/letters/M.png",
+    "gameImagePath": "assets/images/game/M.png",
+    "audioPath": "assets/audio/letters/M.mp3"
+  },
+  {
+    "key": "N",
+    "char": "N",
+    "word": "Nơ",
+    "imagePath": "assets/images/letters/N.png",
+    "gameImagePath": "assets/images/game/N.png",
+    "audioPath": "assets/audio/letters/N.mp3"
+  },
+  {
+    "key": "O",
+    "char": "O",
+    "word": "Ong",
+    "imagePath": "assets/images/letters/O.png",
+    "gameImagePath": "assets/images/game/O.png",
+    "audioPath": "assets/audio/letters/O.mp3"
+  },
+  {
+    "key": "O_circ",
+    "char": "Ô",
+    "word": "Ô tô",
+    "imagePath": "assets/images/letters/O_circ.png",
+    "gameImagePath": "assets/images/game/O_circ.png",
+    "audioPath": "assets/audio/letters/O_circ.mp3"
+  },
+  {
+    "key": "O_horn",
+    "char": "Ơ",
+    "word": "ơi",
+    "imagePath": "assets/images/letters/O_horn.png",
+    "gameImagePath": "assets/images/game/O_horn.png",
+    "audioPath": "assets/audio/letters/O_horn.mp3"
+  },
+  {
+    "key": "P",
+    "char": "P",
+    "word": "Phở",
+    "imagePath": "assets/images/letters/P.png",
+    "gameImagePath": "assets/images/game/P.png",
+    "audioPath": "assets/audio/letters/P.mp3"
+  },
+  {
+    "key": "Q",
+    "char": "Q",
+    "word": "Quả",
+    "imagePath": "assets/images/letters/Q.png",
+    "gameImagePath": "assets/images/game/Q.png",
+    "audioPath": "assets/audio/letters/Q.mp3"
+  },
+  {
+    "key": "R",
+    "char": "R",
+    "word": "Rùa",
+    "imagePath": "assets/images/letters/R.png",
+    "gameImagePath": "assets/images/game/R.png",
+    "audioPath": "assets/audio/letters/R.mp3"
+  },
+  {
+    "key": "S",
+    "char": "S",
+    "word": "Sao",
+    "imagePath": "assets/images/letters/S.png",
+    "gameImagePath": "assets/images/game/S.png",
+    "audioPath": "assets/audio/letters/S.mp3"
+  },
+  {
+    "key": "T",
+    "char": "T",
+    "word": "Tôm",
+    "imagePath": "assets/images/letters/T.png",
+    "gameImagePath": "assets/images/game/T.png",
+    "audioPath": "assets/audio/letters/T.mp3"
+  },
+  {
+    "key": "U",
+    "char": "U",
+    "word": "Út",
+    "imagePath": "assets/images/letters/U.png",
+    "gameImagePath": "assets/images/game/U.png",
+    "audioPath": "assets/audio/letters/U.mp3"
+  },
+  {
+    "key": "U_horn",
+    "char": "Ư",
+    "word": "Ước",
+    "imagePath": "assets/images/letters/U_horn.png",
+    "gameImagePath": "assets/images/game/U_horn.png",
+    "audioPath": "assets/audio/letters/U_horn.mp3"
+  },
+  {
+    "key": "V",
+    "char": "V",
+    "word": "Voi",
+    "imagePath": "assets/images/letters/V.png",
+    "gameImagePath": "assets/images/game/V.png",
+    "audioPath": "assets/audio/letters/V.mp3"
+  },
+  {
+    "key": "X",
+    "char": "X",
+    "word": "Xoài",
+    "imagePath": "assets/images/letters/X.png",
+    "gameImagePath": "assets/images/game/X.png",
+    "audioPath": "assets/audio/letters/X.mp3"
+  },
+  {
+    "key": "Y",
+    "char": "Y",
+    "word": "Yêu",
+    "imagePath": "assets/images/letters/Y.png",
+    "gameImagePath": "assets/images/game/Y.png",
+    "audioPath": "assets/audio/letters/Y.mp3"
+  }
 ]

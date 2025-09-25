@@ -3,6 +3,7 @@ class VnLetter {
   final String char;
   final String? sampleWord;
   final String? imagePath;
+  final String? gameImagePath;
   final String? audioPath;
 
   const VnLetter({
@@ -10,17 +11,18 @@ class VnLetter {
     required this.char,
     this.sampleWord,
     this.imagePath,
+    this.gameImagePath,
     this.audioPath,
   });
 
   factory VnLetter.fromJson(Map<String, dynamic> json) {
-    final key = json['key'] as String;
     return VnLetter(
-      key: key,
+      key: json['key'] as String,
       char: json['char'] as String,
       sampleWord: json['word'] as String?,
-      imagePath: 'assets/images/letters/$key.png',
-      audioPath: 'audio/letters/$key.mp3',
+      imagePath: json['imagePath'] as String?,
+      gameImagePath: json['gameImagePath'] as String?,
+      audioPath: json['audioPath'] as String?,
     );
   }
 
@@ -29,6 +31,7 @@ class VnLetter {
     'char': char,
     'word': sampleWord,
     'imagePath': imagePath,
+    'gameImagePath': gameImagePath,
     'audioPath': audioPath,
   };
 }

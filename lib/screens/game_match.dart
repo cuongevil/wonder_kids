@@ -93,7 +93,7 @@ class _GameMatchState extends GameBaseState<GameMatch>
     final optionCount = (level * 2 + 2).clamp(4, 8);
     final selected = chosen.take(optionCount).toList();
 
-    pairs = selected.map((l) => _Pair(letter: l, image: l.imagePath)).toList();
+    pairs = selected.map((l) => _Pair(letter: l, image: l.gameImagePath)).toList();
     pairs.shuffle();
 
     _pairsAtRoundStart = pairs.length;

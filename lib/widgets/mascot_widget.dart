@@ -23,11 +23,17 @@ class _MascotWidgetState extends State<MascotWidget>
   late Animation<double> _scaleAnimation;
 
   final List<String> _expressions = [
-    "assets/images/mascot.png",
-    "assets/images/mascot_1.png",
-    "assets/images/mascot_2.png",
-    "assets/images/mascot_3.png",
-    "assets/images/mascot_4.png",
+    "assets/images/mascot/mascot.png",
+    "assets/images/mascot/mascot_1.png",
+    "assets/images/mascot/mascot_2.png",
+    "assets/images/mascot/mascot_3.png",
+    "assets/images/mascot/mascot_4.png",
+    "assets/images/mascot/mascot_5.png",
+    "assets/images/mascot/mascot_6.png",
+    "assets/images/mascot/mascot_7.png",
+    "assets/images/mascot/mascot_8.png",
+    "assets/images/mascot/mascot_9.png",
+    "assets/images/mascot/mascot_10.png",
   ];
   late String _currentExpression;
   Timer? _expressionTimer;

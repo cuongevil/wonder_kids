@@ -37,17 +37,6 @@ flutter:
     - assets/audio/ting.mp3
     - assets/audio/correct.mp3
     - assets/audio/wrong.mp3
-    - assets/images/mascot.png
-    - assets/images/mascot_1.png
-    - assets/images/mascot_2.png
-    - assets/images/mascot_3.png
-    - assets/images/mascot_4.png
-    - assets/images/mascot_5.png
-    - assets/images/mascot_6.png
-    - assets/images/mascot_7.png
-    - assets/images/mascot_8.png
-    - assets/images/mascot_9.png
-    - assets/images/mascot_10.png
     - assets/images/icon_book.png
     - assets/images/icon_flashcard.png
     - assets/images/icon_game.png
@@ -58,3 +47,5 @@ flutter:
     - assets/audio/crown.mp3
     - assets/audio/voice_correct.mp3
     - assets/audio/voice_wrong.mp3
+    - assets/images/game/
+    - assets/images/mascot/
