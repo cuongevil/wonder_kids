@@ -5,7 +5,7 @@
     "word": "Áo",
     "imagePath": "assets/images/letters/A.png",
     "gameImagePath": "assets/images/game/A.png",
-    "audioPath": "assets/audio/letters/A.mp3"
+    "audioPath": "audio/letters/A.mp3"
   },
   {
     "key": "A_breve",
@@ -13,7 +13,7 @@
     "word": "Ăn",
     "imagePath": "assets/images/letters/A_breve.png",
     "gameImagePath": "assets/images/game/A_breve.png",
-    "audioPath": "assets/audio/letters/A_breve.mp3"
+    "audioPath": "audio/letters/A_breve.mp3"
   },
   {
     "key": "A_circ",
@@ -21,7 +21,7 @@
     "word": "Ấm",
     "imagePath": "assets/images/letters/A_circ.png",
     "gameImagePath": "assets/images/game/A_circ.png",
-    "audioPath": "assets/audio/letters/A_circ.mp3"
+    "audioPath": "audio/letters/A_circ.mp3"
   },
   {
     "key": "B",
@@ -29,7 +29,7 @@
     "word": "Bé",
     "imagePath": "assets/images/letters/B.png",
     "gameImagePath": "assets/images/game/B.png",
-    "audioPath": "assets/audio/letters/B.mp3"
+    "audioPath": "audio/letters/B.mp3"
   },
   {
     "key": "C",
@@ -37,7 +37,7 @@
     "word": "Cá",
     "imagePath": "assets/images/letters/C.png",
     "gameImagePath": "assets/images/game/C.png",
-    "audioPath": "assets/audio/letters/C.mp3"
+    "audioPath": "audio/letters/C.mp3"
   },
   {
     "key": "D",
@@ -45,7 +45,7 @@
     "word": "Dê",
     "imagePath": "assets/images/letters/D.png",
     "gameImagePath": "assets/images/game/D.png",
-    "audioPath": "assets/audio/letters/D.mp3"
+    "audioPath": "audio/letters/D.mp3"
   },
   {
     "key": "D_cross",
@@ -53,7 +53,7 @@
     "word": "Đèn",
     "imagePath": "assets/images/letters/D_cross.png",
     "gameImagePath": "assets/images/game/D_cross.png",
-    "audioPath": "assets/audio/letters/D_cross.mp3"
+    "audioPath": "audio/letters/D_cross.mp3"
   },
   {
     "key": "E",
@@ -61,7 +61,7 @@
     "word": "Em",
     "imagePath": "assets/images/letters/E.png",
     "gameImagePath": "assets/images/game/E.png",
-    "audioPath": "assets/audio/letters/E.mp3"
+    "audioPath": "audio/letters/E.mp3"
   },
   {
     "key": "E_circ",
@@ -69,7 +69,7 @@
     "word": "Êm",
     "imagePath": "assets/images/letters/E_circ.png",
     "gameImagePath": "assets/images/game/E_circ.png",
-    "audioPath": "assets/audio/letters/E_circ.mp3"
+    "audioPath": "audio/letters/E_circ.mp3"
   },
   {
     "key": "G",
@@ -77,7 +77,7 @@
     "word": "Gà",
     "imagePath": "assets/images/letters/G.png",
     "gameImagePath": "assets/images/game/G.png",
-    "audioPath": "assets/audio/letters/G.mp3"
+    "audioPath": "audio/letters/G.mp3"
   },
   {
     "key": "H",
@@ -85,7 +85,7 @@
     "word": "Hoa",
     "imagePath": "assets/images/letters/H.png",
     "gameImagePath": "assets/images/game/H.png",
-    "audioPath": "assets/audio/letters/H.mp3"
+    "audioPath": "audio/letters/H.mp3"
   },
   {
     "key": "I",
@@ -93,7 +93,7 @@
     "word": "Ích",
     "imagePath": "assets/images/letters/I.png",
     "gameImagePath": "assets/images/game/I.png",
-    "audioPath": "assets/audio/letters/I.mp3"
+    "audioPath": "audio/letters/I.mp3"
   },
   {
     "key": "K",
@@ -101,7 +101,7 @@
     "word": "Kẹo",
     "imagePath": "assets/images/letters/K.png",
     "gameImagePath": "assets/images/game/K.png",
-    "audioPath": "assets/audio/letters/K.mp3"
+    "audioPath": "audio/letters/K.mp3"
   },
   {
     "key": "L",
@@ -109,7 +109,7 @@
     "word": "Lá",
     "imagePath": "assets/images/letters/L.png",
     "gameImagePath": "assets/images/game/L.png",
-    "audioPath": "assets/audio/letters/L.mp3"
+    "audioPath": "audio/letters/L.mp3"
   },
   {
     "key": "M",
@@ -117,7 +117,7 @@
     "word": "Mẹ",
     "imagePath": "assets/images/letters/M.png",
     "gameImagePath": "assets/images/game/M.png",
-    "audioPath": "assets/audio/letters/M.mp3"
+    "audioPath": "audio/letters/M.mp3"
   },
   {
     "key": "N",
@@ -125,7 +125,7 @@
     "word": "Nơ",
     "imagePath": "assets/images/letters/N.png",
     "gameImagePath": "assets/images/game/N.png",
-    "audioPath": "assets/audio/letters/N.mp3"
+    "audioPath": "audio/letters/N.mp3"
   },
   {
     "key": "O",
@@ -133,7 +133,7 @@
     "word": "Ong",
     "imagePath": "assets/images/letters/O.png",
     "gameImagePath": "assets/images/game/O.png",
-    "audioPath": "assets/audio/letters/O.mp3"
+    "audioPath": "audio/letters/O.mp3"
   },
   {
     "key": "O_circ",
@@ -141,7 +141,7 @@
     "word": "Ô tô",
     "imagePath": "assets/images/letters/O_circ.png",
     "gameImagePath": "assets/images/game/O_circ.png",
-    "audioPath": "assets/audio/letters/O_circ.mp3"
+    "audioPath": "audio/letters/O_circ.mp3"
   },
   {
     "key": "O_horn",
@@ -149,7 +149,7 @@
     "word": "ơi",
     "imagePath": "assets/images/letters/O_horn.png",
     "gameImagePath": "assets/images/game/O_horn.png",
-    "audioPath": "assets/audio/letters/O_horn.mp3"
+    "audioPath": "audio/letters/O_horn.mp3"
   },
   {
     "key": "P",
@@ -157,7 +157,7 @@
     "word": "Phở",
     "imagePath": "assets/images/letters/P.png",
     "gameImagePath": "assets/images/game/P.png",
-    "audioPath": "assets/audio/letters/P.mp3"
+    "audioPath": "audio/letters/P.mp3"
   },
   {
     "key": "Q",
@@ -165,7 +165,7 @@
     "word": "Quả",
     "imagePath": "assets/images/letters/Q.png",
     "gameImagePath": "assets/images/game/Q.png",
-    "audioPath": "assets/audio/letters/Q.mp3"
+    "audioPath": "audio/letters/Q.mp3"
   },
   {
     "key": "R",
@@ -173,7 +173,7 @@
     "word": "Rùa",
     "imagePath": "assets/images/letters/R.png",
     "gameImagePath": "assets/images/game/R.png",
-    "audioPath": "assets/audio/letters/R.mp3"
+    "audioPath": "audio/letters/R.mp3"
   },
   {
     "key": "S",
@@ -181,7 +181,7 @@
     "word": "Sao",
     "imagePath": "assets/images/letters/S.png",
     "gameImagePath": "assets/images/game/S.png",
-    "audioPath": "assets/audio/letters/S.mp3"
+    "audioPath": "audio/letters/S.mp3"
   },
   {
     "key": "T",
@@ -189,7 +189,7 @@
     "word": "Tôm",
     "imagePath": "assets/images/letters/T.png",
     "gameImagePath": "assets/images/game/T.png",
-    "audioPath": "assets/audio/letters/T.mp3"
+    "audioPath": "audio/letters/T.mp3"
   },
   {
     "key": "U",
@@ -197,7 +197,7 @@
     "word": "Út",
     "imagePath": "assets/images/letters/U.png",
     "gameImagePath": "assets/images/game/U.png",
-    "audioPath": "assets/audio/letters/U.mp3"
+    "audioPath": "audio/letters/U.mp3"
   },
   {
     "key": "U_horn",
@@ -205,7 +205,7 @@
     "word": "Ước",
     "imagePath": "assets/images/letters/U_horn.png",
     "gameImagePath": "assets/images/game/U_horn.png",
-    "audioPath": "assets/audio/letters/U_horn.mp3"
+    "audioPath": "audio/letters/U_horn.mp3"
   },
   {
     "key": "V",
@@ -213,7 +213,7 @@
     "word": "Voi",
     "imagePath": "assets/images/letters/V.png",
     "gameImagePath": "assets/images/game/V.png",
-    "audioPath": "assets/audio/letters/V.mp3"
+    "audioPath": "audio/letters/V.mp3"
   },
   {
     "key": "X",
@@ -221,7 +221,7 @@
     "word": "Xoài",
     "imagePath": "assets/images/letters/X.png",
     "gameImagePath": "assets/images/game/X.png",
-    "audioPath": "assets/audio/letters/X.mp3"
+    "audioPath": "audio/letters/X.mp3"
   },
   {
     "key": "Y",
@@ -229,6 +229,6 @@
     "word": "Yêu",
     "imagePath": "assets/images/letters/Y.png",
     "gameImagePath": "assets/images/game/Y.png",
-    "audioPath": "assets/audio/letters/Y.mp3"
+    "audioPath": "audio/letters/Y.mp3"
   }
 ]

@@ -7,7 +7,7 @@ class AudioService {
   static Future<void> play(String file) async {
     try {
       await _player.stop();
-      await _player.play(AssetSource("audio/$file"));
+      await _player.play(AssetSource("$file"));
     } catch (_) {}
   }
 
