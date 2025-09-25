@@ -1,7 +1,7 @@
 class VnLetter {
   final String key;
   final String char;
-  final String? sampleWord;
+  final String? word;
   final String? imagePath;
   final String? gameImagePath;
   final String? audioPath;
@@ -9,7 +9,7 @@ class VnLetter {
   const VnLetter({
     required this.key,
     required this.char,
-    this.sampleWord,
+    this.word,
     this.imagePath,
     this.gameImagePath,
     this.audioPath,
@@ -19,7 +19,7 @@ class VnLetter {
     return VnLetter(
       key: json['key'] as String,
       char: json['char'] as String,
-      sampleWord: json['word'] as String?,
+      word: json['word'] as String?,
       imagePath: json['imagePath'] as String?,
       gameImagePath: json['gameImagePath'] as String?,
       audioPath: json['audioPath'] as String?,
@@ -29,7 +29,7 @@ class VnLetter {
   Map<String, dynamic> toJson() => {
     'key': key,
     'char': char,
-    'word': sampleWord,
+    'word': word,
     'imagePath': imagePath,
     'gameImagePath': gameImagePath,
     'audioPath': audioPath,

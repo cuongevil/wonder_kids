@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -10,10 +9,11 @@ import '../widgets/mascot_widget.dart';
 import '../widgets/score_board.dart';
 import '../widgets/rainbow_progress.dart';
 import '../widgets/confetti_overlay.dart';
-import '../widgets/level_complete_dialog.dart';
+import '../widgets/level_complete_dialog_base.dart';
 import '../widgets/letter_column.dart';
 import '../widgets/image_column.dart';
 import '../services/audio_service.dart';
+import '../mixins/game_level_mixin.dart';
 
 class GameMatch extends StatefulWidget {
   const GameMatch({super.key});
@@ -23,7 +23,7 @@ class GameMatch extends StatefulWidget {
 }
 
 class _GameMatchState extends GameBaseState<GameMatch>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, GameLevelMixin {
   @override
   String get gameId => "game2";
 
@@ -38,37 +38,24 @@ class _GameMatchState extends GameBaseState<GameMatch>
   VnLetter? wrongLeft;
   VnLetter? wrongRight;
 
-  int round = 0;
-  int maxRound = 5;
-  int level = 1;
-
-  int streak = 0;
-  int maxStreak = 0;
-  int totalCorrect = 0;
-
-  MascotMood mascotMood = MascotMood.idle;
-
   late AnimationController _progressController;
-  late ConfettiController _confettiController;
   int _pairsAtRoundStart = 0;
 
   @override
   void initState() {
     super.initState();
+    initLevelMixin();
     _loadLetters();
 
     _progressController =
     AnimationController(vsync: this, duration: const Duration(seconds: 2))
       ..repeat();
-
-    _confettiController =
-        ConfettiController(duration: const Duration(seconds: 2));
   }
 
   @override
   void dispose() {
     _progressController.dispose();
-    _confettiController.dispose();
+    disposeLevelMixin();
     super.dispose();
   }
 
@@ -85,7 +72,11 @@ class _GameMatchState extends GameBaseState<GameMatch>
 
   void _nextRound() {
     if (round >= maxRound) {
-      _showLevelComplete();
+      showLevelComplete(
+        title: "🥳 Hoàn thành!",
+        subtitle: "Bạn đã ghép chữ và hình thật giỏi 👏",
+        onNextRound: _nextRound,
+      );
       return;
     }
 
@@ -93,8 +84,10 @@ class _GameMatchState extends GameBaseState<GameMatch>
     final optionCount = (level * 2 + 2).clamp(4, 8);
     final selected = chosen.take(optionCount).toList();
 
-    pairs = selected.map((l) => _Pair(letter: l, image: l.gameImagePath)).toList();
-    pairs.shuffle();
+    pairs = selected
+        .map((l) => _Pair(letter: l, image: l.gameImagePath))
+        .toList()
+      ..shuffle();
 
     _pairsAtRoundStart = pairs.length;
 
@@ -129,16 +122,16 @@ class _GameMatchState extends GameBaseState<GameMatch>
     final isCorrect = selectedLetter!.char == selectedImage!.char;
     await onAnswer(isCorrect);
 
+    setState(() {
+      increaseScore(isCorrect);
+    });
+
     if (isCorrect) {
-      _confettiController.play();
+      confettiController.play();
       AudioService.play("correct.mp3");
 
       setState(() {
         pairs.removeWhere((p) => p.letter.char == selectedLetter!.char);
-        streak++;
-        totalCorrect++;
-        if (streak > maxStreak) maxStreak = streak;
-        mascotMood = MascotMood.happy;
         selectedLetter = null;
         selectedImage = null;
         wrongLeft = null;
@@ -148,17 +141,13 @@ class _GameMatchState extends GameBaseState<GameMatch>
       if (pairs.isEmpty) {
         Future.delayed(const Duration(milliseconds: 600), () {
           if (!mounted) return;
-          setState(() {
-            round++;
-          });
+          setState(() => round++);
           _nextRound();
         });
       }
     } else {
       AudioService.play("wrong.mp3");
       setState(() {
-        streak = 0;
-        mascotMood = MascotMood.sad;
         wrongLeft = selectedLetter;
         wrongRight = selectedImage;
         selectedLetter = null;
@@ -175,59 +164,17 @@ class _GameMatchState extends GameBaseState<GameMatch>
     }
   }
 
-  void _showLevelComplete() {
-    setState(() => mascotMood = MascotMood.celebrate);
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => LevelCompleteDialog(
-        maxRound: maxRound,
-        streak: streak,
-        maxStreak: maxStreak,
-        totalCorrect: totalCorrect,
-        confettiController: _confettiController,
-        onNextLevel: () {
-          setState(() {
-            level++;
-            round = 0;
-            streak = 0;
-            maxStreak = 0;
-            mascotMood = MascotMood.idle;
-          });
-          Future.delayed(const Duration(milliseconds: 200), _nextRound);
-        },
-      ),
-    );
-  }
-
-  @override
-  void onReset() {
-    setState(() {
-      round = 0;
-      level = 1;
-      streak = 0;
-      maxStreak = 0;
-      totalCorrect = 0;
-      mascotMood = MascotMood.idle;
-      wrongLeft = null;
-      wrongRight = null;
-    });
-    _loadLetters();
-  }
-
-  double _overallProgress() {
-    if (maxRound <= 0) return 0;
-    final perRound = (_pairsAtRoundStart == 0)
-        ? 0.0
-        : (_pairsAtRoundStart - pairs.length) / _pairsAtRoundStart;
-    final overall = (round + perRound) / maxRound;
-    return overall.clamp(0.0, 1.0);
+  double _roundProgress() {
+    if (_pairsAtRoundStart == 0) return overallProgress();
+    final perRound =
+        (_pairsAtRoundStart - pairs.length) / _pairsAtRoundStart;
+    final value = (round + perRound) / maxRound;
+    return value.clamp(0.0, 1.0);
   }
 
   @override
   Widget buildGame(BuildContext context) {
-    final progress = _overallProgress();
+    final progress = _roundProgress();
 
     return Container(
       decoration: BoxDecoration(
@@ -297,10 +244,28 @@ class _GameMatchState extends GameBaseState<GameMatch>
             right: 0,
             child: Center(child: MascotWidget(mood: mascotMood)),
           ),
-          ConfettiOverlay(controller: _confettiController),
+          ConfettiOverlay(controller: confettiController),
         ],
       ),
     );
+  }
+
+  @override
+  void onReset() {
+    setState(() {
+      round = 0;
+      level = 1;
+      streak = 0;
+      maxStreak = 0;
+      totalCorrect = 0;
+      mascotMood = MascotMood.idle;
+      selectedLetter = null;
+      selectedImage = null;
+      wrongLeft = null;
+      wrongRight = null;
+      pairs.clear();
+    });
+    _loadLetters();
   }
 }
 

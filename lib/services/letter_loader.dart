@@ -19,7 +19,7 @@ class LetterLoader {
       return VnLetter(
         key: char,
         char: char,
-        sampleWord: (word == null || word.isEmpty) ? null : word,
+        word: (word == null || word.isEmpty) ? null : word,
         imagePath: 'assets/images/letters/$key.png',
         audioPath: 'audio/letters/$key.mp3',
       );
