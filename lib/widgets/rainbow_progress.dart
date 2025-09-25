@@ -18,7 +18,7 @@ class RainbowProgress extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final barWidth = constraints.maxWidth;
-          const starSize = 28.0;
+          const starSize = 18.0;
           final starX = (barWidth - starSize) * progress.clamp(0.0, 1.0);
 
           return Stack(
@@ -45,7 +45,7 @@ class RainbowProgress extends StatelessWidget {
                 child: AnimatedBuilder(
                   animation: controller,
                   builder: (context, child) {
-                    final bounceY = sin(controller.value * 2 * pi) * 6;
+                    final bounceY = sin(controller.value * 2 * pi) * 3;
                     return Transform.translate(
                       offset: Offset(0, bounceY),
                       child: const Icon(Icons.star,

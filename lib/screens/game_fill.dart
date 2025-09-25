@@ -29,13 +29,51 @@ class _GameFillState extends GameBaseState<GameFill>
   String get title => "Chữ còn thiếu";
 
   List<VnLetter> letters = [];
-  VnLetter? answerLetter;
-  String? sampleWord;
-  List<String> displayed = [];
-  List<VnLetter> options = [];
+  VnLetter? answerLetter;       // chữ cái được chọn để lấy 'word'
+  String? sampleWord;           // từ có nghĩa (lấy từ answerLetter.word)
+  List<String> displayed = [];  // từ sau khi che 1 ký tự
+  List<VnLetter> options = [];  // 4 lựa chọn
 
   VnLetter? wrongChoice;
+
+  // Ký tự đã CHUẨN HÓA cần điền (ví dụ 'ó' -> 'O', 'ớ' -> 'Ơ', 'ấ' -> 'Â')
+  String? _missingNormalized;   // so sánh đáp án bằng biến này
+
   late AnimationController _progressController;
+
+  // ==== Helpers: chuẩn hoá ký tự về bảng 29 chữ cái ====
+  static final Map<String, String> _vnMap = {
+    // a
+    'a':'A','á':'A','à':'A','ả':'A','ã':'A','ạ':'A',
+    'ă':'Ă','ắ':'Ă','ằ':'Ă','ẳ':'Ă','ẵ':'Ă','ặ':'Ă',
+    'â':'Â','ấ':'Â','ầ':'Â','ẩ':'Â','ẫ':'Â','ậ':'Â',
+    // e
+    'e':'E','é':'E','è':'E','ẻ':'E','ẽ':'E','ẹ':'E',
+    'ê':'Ê','ế':'Ê','ề':'Ê','ể':'Ê','ễ':'Ê','ệ':'Ê',
+    // i
+    'i':'I','í':'I','ì':'I','ỉ':'I','ĩ':'I','ị':'I',
+    // o
+    'o':'O','ó':'O','ò':'O','ỏ':'O','õ':'O','ọ':'O',
+    'ô':'Ô','ố':'Ô','ồ':'Ô','ổ':'Ô','ỗ':'Ô','ộ':'Ô',
+    'ơ':'Ơ','ớ':'Ơ','ờ':'Ơ','ở':'Ơ','ỡ':'Ơ','ợ':'Ơ',
+    // u
+    'u':'U','ú':'U','ù':'U','ủ':'U','ũ':'U','ụ':'U',
+    'ư':'Ư','ứ':'Ư','ừ':'Ư','ử':'Ư','ữ':'Ư','ự':'Ư',
+    // y
+    'y':'Y','ý':'Y','ỳ':'Y','ỷ':'Y','ỹ':'Y','ỵ':'Y',
+    // d
+    'd':'D','đ':'Đ',
+    // vốn dĩ chữ cái hoa không dấu thanh cũng hợp lệ
+    'ă':'Ă','â':'Â','ê':'Ê','ô':'Ô','ơ':'Ơ','ư':'Ư',
+    // uppercase direct map
+    'A':'A','Ă':'Ă','Â':'Â','E':'E','Ê':'Ê','I':'I','O':'O','Ô':'Ô','Ơ':'Ơ','U':'U','Ư':'Ư','Y':'Y','D':'D','Đ':'Đ',
+  };
+
+  String? _normalizeVN(String ch) {
+    if (ch.trim().isEmpty) return null;
+    final lower = ch.toLowerCase();
+    return _vnMap[lower] ?? _vnMap[ch] ?? null;
+  }
 
   @override
   void initState() {
@@ -77,56 +115,85 @@ class _GameFillState extends GameBaseState<GameFill>
 
     final random = Random();
 
-    // chọn chữ có word hợp lệ
+    // 1) Chọn VnLetter có word hợp lệ (>=2)
     VnLetter candidate;
     do {
       candidate = letters[random.nextInt(letters.length)];
-    } while (candidate.word == null || candidate.word!.length < 2);
+    } while (candidate.word == null || candidate.word!.trim().length < 2);
 
     answerLetter = candidate;
-    sampleWord = answerLetter!.word!;
+    final word = answerLetter!.word!.trim();
 
-    // chọn vị trí bỏ trống
-    final chars = sampleWord!.split('');
-    final idx = random.nextInt(chars.length);
-    final missingChar = chars[idx];
+    // 2) Xác định các vị trí có thể che (chỉ những ký tự map được sang 29 chữ)
+    final chars = word.split('');
+    final eligibleIdx = <int>[];
+    for (int i = 0; i < chars.length; i++) {
+      final n = _normalizeVN(chars[i]);
+      if (n != null) {
+        // n là 1 trong A Ă Â E Ê I O Ô Ơ U Ư Y D Đ
+        eligibleIdx.add(i);
+      }
+    }
+
+    if (eligibleIdx.isEmpty) {
+      // fallback: nếu từ này không có ký tự hợp lệ (hiếm), chọn round khác
+      _nextRound();
+      return;
+    }
+
+    // 3) Chọn random 1 vị trí để che và chuẩn hoá ký tự ẩn
+    final idx = eligibleIdx[random.nextInt(eligibleIdx.length)];
+    final missingChar = chars[idx];               // có thể là 'ó', 'ắ', ...
+    final normalized = _normalizeVN(missingChar); // ví dụ 'ó' -> 'O'
+    _missingNormalized = normalized;              // dùng để check đáp án
+
+    // 4) Tạo chữ hiển thị có '_'
     chars[idx] = "_";
     displayed = chars;
+    sampleWord = word;
 
-    // tạo options: missingChar + 3 chữ khác
-    final shuffled = [...letters]..shuffle();
-    final setChars = <String>{missingChar};
-    final List<VnLetter> temp = [
-      letters.firstWhere(
-            (l) => l.char.toLowerCase() == missingChar.toLowerCase(),
-        orElse: () => VnLetter(
-          key: missingChar,
-          char: missingChar,
-          word: missingChar,
-          imagePath: "",
-          gameImagePath: "",
-          audioPath: "",
-        ),
-      )
-    ];
-
-    for (final l in shuffled) {
-      if (setChars.length == 4) break;
-      if (setChars.add(l.char)) temp.add(l);
+    // 5) Tạo options: 1 đúng (normalized) + 3 nhiễu khác
+    final allCharsSet = letters.map((l) => l.char.toUpperCase()).toSet();
+    VnLetter correct;
+    if (_missingNormalized != null &&
+        allCharsSet.contains(_missingNormalized)) {
+      correct = letters.firstWhere(
+            (l) => l.char.toUpperCase() == _missingNormalized,
+      );
+    } else {
+      // phòng ngừa: nếu vì lý do gì không tìm thấy, tạo tạm
+      correct = VnLetter(
+        key: _missingNormalized ?? 'X',
+        char: _missingNormalized ?? 'X',
+        word: '',
+        imagePath: '',
+        gameImagePath: '',
+        audioPath: '',
+      );
     }
-    temp.shuffle();
-    options = temp;
+
+    final distractors = <VnLetter>[];
+    final shuffled = [...letters]..shuffle();
+    final used = <String>{correct.char.toUpperCase()};
+    for (final l in shuffled) {
+      final up = l.char.toUpperCase();
+      if (used.contains(up)) continue;
+      distractors.add(l);
+      used.add(up);
+      if (distractors.length == 3) break;
+    }
+
+    options = [correct, ...distractors]..shuffle();
 
     wrongChoice = null;
     mascotMood = MascotMood.idle;
-
     setState(() {});
   }
 
   void _checkAnswer(VnLetter chosen) async {
-    final isCorrect = displayed.contains("_") &&
-        sampleWord != null &&
-        sampleWord!.contains(chosen.char);
+    final isCorrect = _missingNormalized != null &&
+        chosen.char.toUpperCase() == _missingNormalized;
+
     await onAnswer(isCorrect);
 
     setState(() {
@@ -157,7 +224,7 @@ class _GameFillState extends GameBaseState<GameFill>
   Widget buildGame(BuildContext context) {
     final progress = overallProgress();
 
-    if (answerLetter == null || sampleWord == null) {
+    if (answerLetter == null || sampleWord == null || _missingNormalized == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -251,6 +318,7 @@ class _GameFillState extends GameBaseState<GameFill>
     );
   }
 
+  // onReset riêng cho GameFill (không gọi super vì lớp cha là abstract)
   @override
   void onReset() {
     setState(() {
@@ -268,8 +336,8 @@ class _GameFillState extends GameBaseState<GameFill>
       displayed = [];
       options = [];
       wrongChoice = null;
+      _missingNormalized = null;
     });
-    _loadLetters(); // nạp lại dữ liệu
+    _loadLetters();
   }
-
 }

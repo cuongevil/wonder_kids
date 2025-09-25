@@ -73,7 +73,7 @@ class _GameMatchState extends GameBaseState<GameMatch>
   void _nextRound() {
     if (round >= maxRound) {
       showLevelComplete(
-        title: "🥳 Hoàn thành!",
+        title: "✨ Xuất sắc!",
         subtitle: "Bạn đã ghép chữ và hình thật giỏi 👏",
         onNextRound: _nextRound,
       );

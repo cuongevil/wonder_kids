@@ -68,7 +68,7 @@ class _GameFindState extends GameBaseState<GameFind>
   void _nextRound() {
     if (round >= maxRound) {
       showLevelComplete(
-        title: "🎯 Hoàn thành!",
+        title: "✨ Xuất sắc!",
         subtitle: "Bạn đã săn chữ thành công 🎉",
         onNextRound: _nextRound,
       );
