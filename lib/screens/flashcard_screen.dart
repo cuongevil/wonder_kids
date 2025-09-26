@@ -34,7 +34,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Thẻ nhớ thần kỳ"),
+        title: const Text("Thẻ chữ"),
         backgroundColor: Colors.pinkAccent.shade100,
       ),
       body: FlashcardWidget(letters: letters),

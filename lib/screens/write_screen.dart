@@ -94,7 +94,7 @@ class _WriteScreenState extends State<WriteScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: Text("Bé tập viết: ${letter.char}"),
+        title: Text("Tập viết: ${letter.char}"),
         actions: [
           IconButton(
             icon: const Icon(Icons.arrow_forward),

@@ -27,7 +27,7 @@ class _GameFindState extends GameBaseState<GameFind>
   String get gameId => "game1";
 
   @override
-  String get title => "Săn chữ vui nhộn";
+  String get title => "Tìm chữ";
 
   List<VnLetter> letters = [];
   VnLetter? targetLetter;

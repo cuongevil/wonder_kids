@@ -27,7 +27,7 @@ class _GameListenState extends GameBaseState<GameListen>
   String get gameId => "game4";
 
   @override
-  String get title => "Nghe & Chọn";
+  String get title => "Nghe và Chọn";
 
   List<VnLetter> letters = [];
   VnLetter? targetLetter;
@@ -74,7 +74,7 @@ class _GameListenState extends GameBaseState<GameListen>
     if (round >= maxRound) {
       showLevelComplete(
         title: "✨ Tuyệt vời!",
-        subtitle: "Tai thính quá! Cùng bước sang màn tiếp theo nhé 👏",
+        subtitle: "Cùng bước sang màn tiếp theo nhé 👏",
         onNextRound: _nextRound,
       );
       return;

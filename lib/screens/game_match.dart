@@ -28,7 +28,7 @@ class _GameMatchState extends GameBaseState<GameMatch>
   String get gameId => "game2";
 
   @override
-  String get title => "Xếp hình chữ cái";
+  String get title => "Ghép chữ";
 
   List<VnLetter> letters = [];
   List<_Pair> pairs = [];

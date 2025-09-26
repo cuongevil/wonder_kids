@@ -26,7 +26,7 @@ class _GameFillState extends GameBaseState<GameFill>
   String get gameId => "game3";
 
   @override
-  String get title => "Chữ còn thiếu";
+  String get title => "Điền chữ";
 
   List<VnLetter> letters = [];
   VnLetter? answerLetter;       // chữ cái được chọn để lấy 'word'
@@ -107,7 +107,7 @@ class _GameFillState extends GameBaseState<GameFill>
     if (round >= maxRound) {
       showLevelComplete(
         title: "✨ Xuất sắc!",
-        subtitle: "Bạn đã điền chữ còn thiếu chính xác 🤩",
+        subtitle: "Bạn đã điền chữ chính xác 🤩",
         onNextRound: _nextRound,
       );
       return;

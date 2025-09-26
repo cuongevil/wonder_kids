@@ -11,7 +11,7 @@ class LearningRegistry {
   static final List<LearningInfo> _learnings = [
     LearningInfo(
       id: "learn1",
-      title: "Chữ cái diệu kỳ",
+      title: "Chữ cái",
       icon: Icons.sort_by_alpha,
       gradient: [Colors.orange, Colors.yellow],
       route: AppRoutes.home,
@@ -19,7 +19,7 @@ class LearningRegistry {
     ),
     LearningInfo(
       id: "learn2",
-      title: "Thẻ nhớ thần kỳ",
+      title: "Thẻ chữ",
       icon: Icons.style,
       gradient: [Colors.blue, Colors.purple],
       route: AppRoutes.flashcard,
@@ -27,7 +27,7 @@ class LearningRegistry {
     ),
     LearningInfo(
       id: "learn3",
-      title: "Bé tập viết",
+      title: "Tập viết",
       icon: Icons.edit,
       gradient: [Colors.green, Colors.lightGreen],
       route: AppRoutes.write,

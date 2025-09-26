@@ -7,7 +7,7 @@ class GameRegistry {
   static final List<GameInfo> _games = [
     GameInfo(
       id: "game1",
-      title: "Săn chữ vui nhộn",
+      title: "Tìm chữ",
       icon: Icons.search,
       color: Colors.pink,
       route: AppRoutes.gameFind,
@@ -15,7 +15,7 @@ class GameRegistry {
     ),
     GameInfo(
       id: "game2",
-      title: "Xếp hình chữ cái",
+      title: "Ghép chữ",
       icon: Icons.image,
       color: Colors.teal,
       route: AppRoutes.gameMatch,
@@ -23,7 +23,7 @@ class GameRegistry {
     ),
     GameInfo(
       id: "game3",
-      title: "Chữ còn thiếu",
+      title: "Điền chữ",
       icon: Icons.edit,
       color: Colors.blue,
       route: AppRoutes.gameFill,
@@ -31,7 +31,7 @@ class GameRegistry {
     ),
     GameInfo(
       id: "game4",
-      title: "Nghe & Chọn",
+      title: "Nghe và Chọn",
       icon: Icons.volume_up,
       color: Colors.orange,
       route: AppRoutes.gameListen,
